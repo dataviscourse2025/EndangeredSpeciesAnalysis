@@ -1,6 +1,7 @@
 // Load the CSV file
-d3.csv("endangered_species.csv").then(data => {
+d3.csv("data/endangered_species.csv").then(data => {
   // Parse date and numeric columns
+  console.log(data)
   const parseDate = d3.timeParse("%d %b %y"); // adjust if your date format is different
   data.forEach(d => {
     d.date = parseDate(d.date);
