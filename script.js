@@ -1,51 +1,77 @@
-d3.csv("data/endangered_species.csv").then(data => {
-  console.log("Loaded data:", data);
-
-  const tbody = d3.select("#data-table tbody");
-  data.slice(0, 10).forEach(d => {
-    const row = tbody.append("tr");
-    row.append("td").text(d.Species);
-    row.append("td").text(d.Region);
-    row.append("td").text(d.Status);
+// Load the CSV file
+d3.csv("endangered_species.csv").then(data => {
+  // Parse date and numeric columns
+  const parseDate = d3.timeParse("%Y-%m-%d"); // adjust if your date format is different
+  data.forEach(d => {
+    d.date = parseDate(d.date);
+    // Convert all count columns to numbers
+    for (let key in d) {
+      if (key !== "date") d[key] = +d[key];
+    }
   });
 
-  const regionCounts = d3.rollups(
-    data,
-    v => v.length,
-    d => d.Region
-  );
+  // --- STACKED AREA CHART ---
+  const margin = { top: 20, right: 30, bottom: 30, left: 60 };
+  const width = document.getElementById('chart').clientWidth - margin.left - margin.right;
+  const height = 400 - margin.top - margin.bottom;
 
-  const width = 600, height = 400;
   const svg = d3.select("#chart")
     .append("svg")
-    .attr("width", width)
-    .attr("height", height);
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+    .attr("transform", `translate(${margin.left},${margin.top})`);
 
-  const x = d3.scaleBand()
-    .domain(regionCounts.map(d => d[0]))
-    .range([50, width - 20])
-    .padding(0.2);
+  // Columns to include in the stack (e.g., endangered/threatened mammals, birds, reptiles, etc.)
+  const keys = [
+    "endangered_mammals","threatened_mammals",
+    "endangered_birds","threatened_birds",
+    "endangered_reptiles","threatened_reptiles"
+    // Add more categories if desired
+  ];
+
+  const stack = d3.stack()
+    .keys(keys);
+
+  const layers = stack(data);
+
+  const x = d3.scaleTime()
+    .domain(d3.extent(data, d => d.date))
+    .range([0, width]);
 
   const y = d3.scaleLinear()
-    .domain([0, d3.max(regionCounts, d => d[1])])
-    .nice()
-    .range([height - 50, 20]);
+    .domain([0, d3.max(layers[layers.length-1], d => d[1])])
+    .range([height, 0]);
 
-  svg.selectAll("rect")
-    .data(regionCounts)
-    .enter()
-    .append("rect")
-    .attr("x", d => x(d[0]))
-    .attr("y", d => y(d[1]))
-    .attr("width", x.bandwidth())
-    .attr("height", d => height - 50 - y(d[1]))
-    .attr("fill", "#006d77");
+  const color = d3.scaleOrdinal()
+    .domain(keys)
+    .range(d3.schemeCategory10);
 
+  const area = d3.area()
+    .x(d => x(d.data.date))
+    .y0(d => y(d[0]))
+    .y1(d => y(d[1]));
+
+  svg.selectAll("path")
+    .data(layers)
+    .join("path")
+    .attr("fill", d => color(d.key))
+    .attr("d", area);
+
+  // Axes
   svg.append("g")
-    .attr("transform", `translate(0,${height - 50})`)
+    .attr("transform", `translate(0,${height})`)
     .call(d3.axisBottom(x));
 
   svg.append("g")
-    .attr("transform", "translate(50,0)")
     .call(d3.axisLeft(y));
+
+  // --- TABLE POPULATION ---
+  const tbody = d3.select("#data-table tbody");
+  data.forEach(d => {
+    tbody.append("tr")
+      .html(`<td>${d.date.toLocaleDateString()}</td>
+             <td>${d.all_ani}</td>
+             <td>${d.endangered_mammals}</td>`); // example columns for table
+  });
 });
