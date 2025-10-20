@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Endangered Species Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="style.css" />
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+  </head>
+  <body>
+    <header>
+      <h1>Endangered Species Dashboard</h1>
+      <p>Visualizing global endangered species data</p>
+    </header>
+
+    <main>
+      <section id="chart-section">
+        <h2>Species by Region</h2>
+        <div id="chart"></div>
+      </section>
+
+      <section id="table-section">
+        <h2>Data Preview</h2>
+        <table id="data-table">
+          <thead>
+            <tr><th>Species</th><th>Region</th><th>Status</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
+    </main>
+
+    <footer>
+      <p>Built with D3.js | Data from your CSV file</p>
+    </footer>
+
+    <script src="script.js"></script>
+  </body>
+</html>
