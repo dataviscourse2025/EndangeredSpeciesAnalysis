@@ -1,7 +1,7 @@
 // Load the CSV file
 d3.csv("endangered_species.csv").then(data => {
   // Parse date and numeric columns
-  const parseDate = d3.timeParse("%Y-%m-%d"); // adjust if your date format is different
+  const parseDate = d3.timeParse("%d %b %y"); // adjust if your date format is different
   data.forEach(d => {
     d.date = parseDate(d.date);
     // Convert all count columns to numbers
