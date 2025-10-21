@@ -29,7 +29,7 @@ d3.csv("data/endangered_species.csv").then(data => {
 
   const svg = d3.select("#chart")
     .append("svg")
-    .attr("width", width + margin.left + margin.right)
+    .attr("width", width + margin.left + margin.right + 200)
     .attr("height", height + margin.top + margin.bottom)
     .append("g")
     .attr("transform", `translate(${margin.left},${margin.top})`);
@@ -47,8 +47,6 @@ d3.csv("data/endangered_species.csv").then(data => {
     "endangered_insects",
     "endangered_arachnids",
     "endangered_coral",
-    "endangered_plants"
-  
     // Add more categories if desired
   ];
 
