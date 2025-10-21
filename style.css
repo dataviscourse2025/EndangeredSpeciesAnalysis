@@ -28,6 +28,22 @@ h1 {
   stroke: none;
 }
 
+/* Legend styles */
+.legend {
+  font-family: Arial, sans-serif;
+}
+
+.legend-item rect {
+  stroke: #ccc;
+  stroke-width: 0.5px;
+}
+
+.legend-item text {
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  fill: #333;
+}
+
 table {
   width: 90%;
   margin: 0 auto;

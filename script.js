@@ -81,6 +81,12 @@ d3.csv("data/endangered_species.csv").then(data => {
     .domain(keys)
     .range(d3.schemeCategory10);
 
+  // Function to format key names for the legend
+  const formatKeyName = (key) => {
+    return key.replace(/_/g, ' ')
+              .replace(/\b\w/g, l => l.toUpperCase());
+  };
+
   const area = d3.area()
     .x(d => x(d.data.date))
     .y0(d => y(d[0]))
@@ -99,6 +105,36 @@ d3.csv("data/endangered_species.csv").then(data => {
 
   svg.append("g")
     .call(d3.axisLeft(y));
+
+  // Legend
+  const legendWidth = 180;
+  const legendX = Math.max(width - legendWidth - 10, width * 0.6); // Position legend dynamically
+  const legend = svg.append("g")
+    .attr("class", "legend")
+    .attr("transform", `translate(${legendX}, 30)`);
+
+  const legendItems = legend.selectAll(".legend-item")
+    .data(keys)
+    .join("g")
+    .attr("class", "legend-item")
+    .attr("transform", (d, i) => `translate(0, ${i * 22})`);
+
+  // Add colored rectangles
+  legendItems.append("rect")
+    .attr("width", 15)
+    .attr("height", 15)
+    .attr("fill", color)
+    .attr("stroke", "#999")
+    .attr("stroke-width", 0.5);
+
+  // Add text labels
+  legendItems.append("text")
+    .attr("x", 20)
+    .attr("y", 12)
+    .style("font-size", "11px")
+    .style("fill", "#333")
+    .style("font-family", "Arial, sans-serif")
+    .text(formatKeyName);
 
   // --- TABLE POPULATION ---
   const tbody = d3.select("#data-table tbody");
