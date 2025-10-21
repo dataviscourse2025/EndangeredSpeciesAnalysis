@@ -36,9 +36,19 @@ d3.csv("data/endangered_species.csv").then(data => {
 
   // Columns to include in the stack (e.g., endangered/threatened mammals, birds, reptiles, etc.)
   const keys = [
-    "endangered_mammals","threatened_mammals",
-    "endangered_birds","threatened_birds",
-    "endangered_reptiles","threatened_reptiles"
+    "endangered_mammals",
+    "endangered_birds",
+    "endangered_reptiles",
+    "endangered_amphs",
+    "endangered_fish",
+    "endangered_snails"
+    ,"endangered_clams",
+    "endangered_crustaceans",
+    "endangered_insects",
+    "endangered_arachnids",
+    "endangered_coral",
+    "endangered_plants"
+  
     // Add more categories if desired
   ];
 
