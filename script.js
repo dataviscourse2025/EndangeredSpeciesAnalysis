@@ -1,7 +1,7 @@
 // Load the CSV file
 d3.csv("data/endangered_species.csv").then(data => {
-  const parseDate = d3.timeParse("%-d %b %y"); // Handle days without leading zero
-  data.forEach((d, i) => {
+  const parseDate = d3.timeParse("%-d %b %y"); 
+  data.forEach((d) => {
     d.date = parseDate(d.date);
     for (let key in d) {
       if (key !== "date") d[key] = +d[key] || 0;
@@ -10,7 +10,7 @@ d3.csv("data/endangered_species.csv").then(data => {
 
   data = data.filter(d => d.date !== null);
 
-  const margin = { top: 20, right: 160, bottom: 60, left: 60 };
+  const margin = { top: 20, right: 160, bottom: 40, left: 60 };
   const chartElement = document.getElementById('chart');
   const containerWidth = chartElement.clientWidth || 800;
   const width = containerWidth - margin.left - margin.right;
@@ -63,29 +63,35 @@ d3.csv("data/endangered_species.csv").then(data => {
     .attr("fill", d => color(d.key))
     .attr("d", area);
 
-  // --- X AXIS with formatted dates and rotation ---
+  // --- X AXIS every 10 years ---
   const xAxis = d3.axisBottom(x)
-    .tickFormat(d3.timeFormat("%b %Y"))
-    .ticks(d3.timeMonth.every(1)); // monthly ticks
+    .ticks(d3.timeYear.every(10))
+    .tickFormat(d3.timeFormat("%Y"));
 
   svg.append("g")
     .attr("transform", `translate(0,${height})`)
     .call(xAxis)
     .selectAll("text")
-    .attr("text-anchor", "end")
-    .attr("transform", "rotate(-45)")
     .style("font-size", "11px");
 
-  // --- Y AXIS ---
+  // --- Y AXIS as a vertical line ---
+  svg.append("line")
+    .attr("x1", 0)
+    .attr("x2", 0)
+    .attr("y1", 0)
+    .attr("y2", height)
+    .attr("stroke", "black")
+    .attr("stroke-width", 1);
+
+  // Optional: add Y-axis ticks with labels
+  const yAxis = d3.axisLeft(y).ticks(5);
   svg.append("g")
-    .call(d3.axisLeft(y))
+    .call(yAxis)
     .selectAll("path, line")
     .attr("stroke", "black");
 
   // --- Legend vertically centered ---
-  const legend = svg.append("g")
-    .attr("class", "legend");
-
+  const legend = svg.append("g").attr("class", "legend");
   const legendHeight = keys.length * 22;
   const legendX = width + 20;
   const legendY = (height - legendHeight) / 2;
