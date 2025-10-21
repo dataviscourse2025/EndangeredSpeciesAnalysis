@@ -107,6 +107,7 @@ d3.csv("data/endangered_species.csv").then(data => {
     .call(d3.axisLeft(y));
 
   // Legend
+  console.log("Legend keys:", keys);
   const legendWidth = 180;
   const legendX = Math.max(width - legendWidth - 10, width * 0.6); // Position legend dynamically
   const legend = svg.append("g")
