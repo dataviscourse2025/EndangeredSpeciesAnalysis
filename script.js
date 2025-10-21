@@ -114,13 +114,24 @@ d3.csv("data/endangered_species.csv").then(data => {
   svg.append("g")
     .call(d3.axisLeft(y));
 
+  svg.append("line")
+    .attr("x1", width + 20)
+    .attr("x2", width + 20)
+    .attr("y1", 0)
+    .attr("y2", height)
+    .attr("stroke", "#ccc")
+    .attr("stroke-dasharray", "2,2");
+
   // Legend
   console.log("Legend keys:", keys);
-  const legendWidth = 180;
-  const legendX = Math.max(width - legendWidth - 10, width * 0.6); // Position legend dynamically
+
+
+  const legendX = width + 40; // 40px gap to the right of chart
+  const legendY = 20;
+    
   const legend = svg.append("g")
     .attr("class", "legend")
-    .attr("transform", `translate(${legendX}, 30)`);
+    .attr("transform", `translate(${legendX}, ${legendY})`);
 
   const legendItems = legend.selectAll(".legend-item")
     .data(keys)
@@ -144,6 +155,7 @@ d3.csv("data/endangered_species.csv").then(data => {
     .style("fill", "#333")
     .style("font-family", "Arial, sans-serif")
     .text(formatKeyName);
+
 
   // --- TABLE POPULATION ---
   const tbody = d3.select("#data-table tbody");
