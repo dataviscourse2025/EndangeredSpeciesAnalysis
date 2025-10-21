@@ -18,6 +18,16 @@ h1 {
   box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
 
+#chart svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+#chart path {
+  stroke: none;
+}
+
 table {
   width: 90%;
   margin: 0 auto;

@@ -1,20 +1,31 @@
 // Load the CSV file
 d3.csv("data/endangered_species.csv").then(data => {
   // Parse date and numeric columns
-  console.log(data)
-  const parseDate = d3.timeParse("%d %b %y"); // adjust if your date format is different
-  data.forEach(d => {
+  console.log("Loaded data:", data)
+  const parseDate = d3.timeParse("%-d %b %y"); // Updated format to handle days without leading zero
+  data.forEach((d, i) => {
+    const originalDate = d.date;
     d.date = parseDate(d.date);
+    if (i < 3) console.log(`Row ${i}: "${originalDate}" → ${d.date}`); // Debug first few dates
     // Convert all count columns to numbers
     for (let key in d) {
-      if (key !== "date") d[key] = +d[key];
+      if (key !== "date") d[key] = +d[key] || 0; // Handle NaN values
     }
   });
+  
+  // Filter out any rows with invalid dates
+  data = data.filter(d => d.date !== null);
+  console.log("Filtered data:", data);
 
   // --- STACKED AREA CHART ---
   const margin = { top: 20, right: 30, bottom: 30, left: 60 };
-  const width = document.getElementById('chart').clientWidth - margin.left - margin.right;
+  // Ensure we have a proper width even if clientWidth is 0
+  const chartElement = document.getElementById('chart');
+  const containerWidth = chartElement.clientWidth || 800; // fallback to 800px
+  const width = containerWidth - margin.left - margin.right;
   const height = 400 - margin.top - margin.bottom;
+  
+  console.log("Chart dimensions:", { width, height, containerWidth });
 
   const svg = d3.select("#chart")
     .append("svg")
@@ -31,17 +42,39 @@ d3.csv("data/endangered_species.csv").then(data => {
     // Add more categories if desired
   ];
 
+  console.log("Available data columns:", Object.keys(data[0] || {}));
+  console.log("Stack keys:", keys);
+
   const stack = d3.stack()
     .keys(keys);
 
   const layers = stack(data);
+  console.log("Stacked layers:", layers);
+
+  // Check if we have valid data and dates
+  const dateExtent = d3.extent(data, d => d.date);
+  console.log("Date extent:", dateExtent);
+  
+  if (!dateExtent[0] || !dateExtent[1]) {
+    console.error("No valid dates found in data");
+    return;
+  }
 
   const x = d3.scaleTime()
-    .domain(d3.extent(data, d => d.date))
+    .domain(dateExtent)
     .range([0, width]);
 
+  // Find max value from all layers
+  let maxValue = 0;
+  layers.forEach(layer => {
+    const layerMax = d3.max(layer, d => d[1]);
+    if (layerMax > maxValue) maxValue = layerMax;
+  });
+  
+  console.log("Max value for y scale:", maxValue);
+
   const y = d3.scaleLinear()
-    .domain([0, d3.max(layers[layers.length-1], d => d[1])])
+    .domain([0, maxValue])
     .range([height, 0]);
 
   const color = d3.scaleOrdinal()
@@ -75,4 +108,8 @@ d3.csv("data/endangered_species.csv").then(data => {
              <td>${d.all_ani}</td>
              <td>${d.endangered_mammals}</td>`); // example columns for table
   });
+  
+  console.log("Chart creation completed successfully!");
+}).catch(error => {
+  console.error("Error loading or processing data:", error);
 });
