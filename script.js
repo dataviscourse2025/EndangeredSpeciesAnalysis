@@ -167,7 +167,9 @@ function renderUSMap() {
     .style("pointer-events", "none")
     .style("font-size", "12px");
 
-  const projection = d3.geoAlbersUsa().scale(1300).translate([width/2, height/2]);
+  const projection = d3.geoAlbersUsa()
+  .translate([width / 2, height / 2])
+  .scale(width * 1.2); 
   const path = d3.geoPath().projection(projection);
 
   Promise.all([
