@@ -115,7 +115,11 @@ d3.csv("data/endangered_species.csv").then(data => {
     .style("font-size", "11px")
     .style("fill", "#333")
     .style("font-family", "Arial, sans-serif")
-    .text(d => d.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()));
+    .text(d => d
+      .replace(/^endangered_/, '')   
+      .replace(/_/g, ' ')      
+      .replace(/\b\w/g, l => l.toUpperCase())
+    );
 
   console.log("Chart creation completed successfully!");
 }).catch(error => {
