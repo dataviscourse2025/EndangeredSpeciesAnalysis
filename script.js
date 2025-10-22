@@ -6,6 +6,20 @@ function renderStackedArea() {
       .attr("class", "chart-title")
       .text("Number of Endangered Animal Species Per Class");
 
+    // ✨ Added subtitle with links
+    container.append("div")
+      .attr("class", "chart-subtitle")
+      .style("margin", "2px 0 8px 0")
+      .html(
+        `Sources: 
+        <a href="https://www.kaggle.com/datasets/chirayurijal/worldwildlifespeciesdata" target="_blank" rel="noopener noreferrer">
+          Kaggle: World Wildlife Species Data
+        </a> • 
+        <a href="https://www.fws.gov/page/endangered-species-act-amendments" target="_blank" rel="noopener noreferrer">
+          FWS: Endangered Species Act Amendments
+        </a>`
+      );
+
     const parseDate = d3.timeParse("%-d %b %y");
     data.forEach((d) => {
       d.date = parseDate(d.date);
@@ -140,6 +154,7 @@ function renderStackedArea() {
     console.error("Error loading or processing data:", error);
   });
 }
+
 
 function renderUSMap() {
   const container = d3.select("#chart-map");
