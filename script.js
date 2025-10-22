@@ -5,6 +5,7 @@ function renderStackedArea() {
     container.append("h2")
       .attr("class", "chart-title")
       .text("Number of Endangered Species Per Class");
+
     const parseDate = d3.timeParse("%-d %b %y");
     data.forEach((d) => {
       d.date = parseDate(d.date);
@@ -13,17 +14,20 @@ function renderStackedArea() {
       }
     });
     data = data.filter(d => d.date !== null);
-    const margin = { top: 20, right: 160, bottom: 40, left: 60 };
+
+    const margin = { top: 20, right: 160, bottom: 60, left: 70 };
     const chartElement = document.getElementById('chart');
     const containerWidth = chartElement.clientWidth || 800;
     const width = containerWidth - margin.left - margin.right;
     const height = 400 - margin.top - margin.bottom;
-    const svg = d3.select("#chart")
+
+    const svg = container
       .append("svg")
       .attr("width", width + margin.left + margin.right)
       .attr("height", height + margin.top + margin.bottom)
       .append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
+
     const keys = [
       "endangered_mammals",
       "endangered_birds",
@@ -37,34 +41,43 @@ function renderStackedArea() {
       "endangered_arachnids",
       "endangered_coral"
     ];
+
     const stack = d3.stack().keys(keys);
     const layers = stack(data);
+
     const x = d3.scaleTime()
       .domain(d3.extent(data, d => d.date))
       .range([0, width]);
+
     const y = d3.scaleLinear()
       .domain([0, d3.max(layers, layer => d3.max(layer, d => d[1]))])
       .range([height, 0]);
+
     const color = d3.scaleOrdinal()
       .domain(keys)
       .range(d3.schemeCategory10);
+
     const area = d3.area()
       .x(d => x(d.data.date))
       .y0(d => y(d[0]))
       .y1(d => y(d[1]));
+
     svg.selectAll("path")
       .data(layers)
       .join("path")
       .attr("fill", d => color(d.key))
       .attr("d", area);
+
     const xAxis = d3.axisBottom(x)
       .ticks(d3.timeYear.every(10))
       .tickFormat(d3.timeFormat("%Y"));
+
     svg.append("g")
       .attr("transform", `translate(0,${height})`)
       .call(xAxis)
       .selectAll("text")
       .style("font-size", "11px");
+
     svg.append("line")
       .attr("x1", 0)
       .attr("x2", 0)
@@ -72,26 +85,31 @@ function renderStackedArea() {
       .attr("y2", height)
       .attr("stroke", "black")
       .attr("stroke-width", 1);
+
     const yAxis = d3.axisLeft(y).ticks(5);
     svg.append("g")
       .call(yAxis)
       .selectAll("path, line")
       .attr("stroke", "black");
+
     const legend = svg.append("g").attr("class", "legend");
     const legendHeight = keys.length * 22;
     const legendX = width + 20;
     const legendY = (height - legendHeight) / 2;
+
     const legendItems = legend.selectAll(".legend-item")
       .data(keys)
       .join("g")
       .attr("class", "legend-item")
       .attr("transform", (d, i) => `translate(${legendX}, ${legendY + i * 22})`);
+
     legendItems.append("rect")
       .attr("width", 15)
       .attr("height", 15)
       .attr("fill", d => color(d))
       .attr("stroke", "#999")
       .attr("stroke-width", 0.5);
+
     legendItems.append("text")
       .attr("x", 20)
       .attr("y", 12)
@@ -103,10 +121,26 @@ function renderStackedArea() {
         .replace(/_/g, ' ')
         .replace(/\b\w/g, l => l.toUpperCase())
       );
+
+    svg.append("text")
+      .attr("x", width / 2)
+      .attr("y", height + 40)
+      .attr("text-anchor", "middle")
+      .style("font-size", "12px")
+      .text("Year");
+
+    svg.append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("x", -height / 2)
+      .attr("y", -50)
+      .attr("text-anchor", "middle")
+      .style("font-size", "12px")
+      .text("Number of Species");
   }).catch(error => {
     console.error("Error loading or processing data:", error);
   });
 }
+
 
 function renderHistogram5yr() {
   d3.csv("data/species-listings-by-year-totals-report.csv", d3.autoType).then(data => {
