@@ -141,6 +141,120 @@ function renderStackedArea() {
   });
 }
 
+function renderUSMap() {
+  const container = d3.select("#chart-map");
+  container.html("");
+  container.append("h2")
+    .attr("class", "chart-title")
+    .text("US Endangered Species by State (2019)");
+
+  const width = 960;
+  const height = 600;
+
+  const svg = container.append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+  const tooltip = container.append("div")
+    .attr("id", "tooltip")
+    .attr("class", "tooltip")
+    .style("opacity", 0)
+    .style("position", "absolute")
+    .style("background", "rgba(0,0,0,0.8)")
+    .style("color", "white")
+    .style("padding", "5px 10px")
+    .style("border-radius", "4px")
+    .style("pointer-events", "none")
+    .style("font-size", "12px");
+
+  const projection = d3.geoAlbersUsa().scale(1300).translate([width/2, height/2]);
+  const path = d3.geoPath().projection(projection);
+
+  Promise.all([
+    d3.json("https://d3js.org/us-10m.v1.json"),
+    d3.csv("data/endangered_2019.csv")
+  ]).then(([us, csvData]) => {
+    const data = {};
+    let maxVal = 0;
+    csvData.forEach(d => {
+      const val = +d["Endangered (Total) 2019"];
+      data[d.State] = val;
+      if (val > maxVal) maxVal = val;
+    });
+
+    const color = d3.scaleSequential()
+      .domain([0, maxVal])
+      .interpolator(d3.interpolateReds);
+
+    svg.append("g")
+      .selectAll("path")
+      .data(topojson.feature(us, us.objects.states).features)
+      .join("path")
+      .attr("class", "state")
+      .attr("d", path)
+      .attr("fill", d => {
+        const stateName = d.properties.name || d.id;
+        return data[stateName] !== undefined ? color(data[stateName]) : "#eee";
+      })
+      .attr("stroke", "#fff")
+      .attr("stroke-width", 1)
+      .on("mouseover", function(event, d) {
+        const stateName = d.properties.name || d.id;
+        const value = data[stateName] !== undefined ? data[stateName] : "No data";
+        tooltip.transition().duration(100).style("opacity", 1);
+        tooltip.html(`<strong>${stateName}</strong><br/>Endangered: ${value}`)
+          .style("left", (event.pageX + 10) + "px")
+          .style("top", (event.pageY + 10) + "px");
+        d3.select(this).attr("stroke", "#000").attr("stroke-width", 2);
+      })
+      .on("mousemove", function(event) {
+        tooltip.style("left", (event.pageX + 10) + "px")
+               .style("top", (event.pageY + 10) + "px");
+      })
+      .on("mouseout", function() {
+        tooltip.transition().duration(100).style("opacity", 0);
+        d3.select(this).attr("stroke", "#fff").attr("stroke-width", 1);
+      });
+
+    // Optional legend
+    const legendWidth = 200;
+    const legendHeight = 10;
+    const legendMargin = { top: 20, right: 20, bottom: 40, left: 20 };
+
+    const defs = svg.append("defs");
+    const linearGradient = defs.append("linearGradient")
+      .attr("id", "legend-gradient");
+
+    linearGradient.selectAll("stop")
+      .data(d3.range(0, 1.01, 0.01))
+      .join("stop")
+      .attr("offset", d => d)
+      .attr("stop-color", d => color(d * maxVal));
+
+    svg.append("rect")
+      .attr("x", width - legendWidth - 20)
+      .attr("y", height - 30)
+      .attr("width", legendWidth)
+      .attr("height", legendHeight)
+      .style("fill", "url(#legend-gradient)")
+      .style("stroke", "#999")
+      .style("stroke-width", 0.5);
+
+    svg.append("text")
+      .attr("x", width - legendWidth - 20)
+      .attr("y", height - 35)
+      .style("font-size", "12px")
+      .text("Low");
+
+    svg.append("text")
+      .attr("x", width - 20)
+      .attr("y", height - 35)
+      .style("font-size", "12px")
+      .attr("text-anchor", "end")
+      .text("High");
+
+  }).catch(error => console.error("Error loading map or data:", error));
+}
 
 function renderHistogram5yr() {
   d3.csv("data/species-listings-by-year-totals-report.csv", d3.autoType).then(data => {
