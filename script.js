@@ -1,5 +1,10 @@
 function renderStackedArea() {
   d3.csv("data/endangered_species.csv").then(data => {
+    const container = d3.select("#chart");
+    container.html("");
+    container.append("h2")
+      .attr("class", "chart-title")
+      .text("Number of Endangered Species Per Class");
     const parseDate = d3.timeParse("%-d %b %y");
     data.forEach((d) => {
       d.date = parseDate(d.date);
