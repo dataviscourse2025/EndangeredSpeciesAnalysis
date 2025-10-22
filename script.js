@@ -109,34 +109,49 @@ function renderHistogram5yr() {
       year: +d["Calendar Year"],
       listings: +d["Number of New Species Listings"]
     })).filter(d => !isNaN(d.year) && !isNaN(d.listings));
+
+    const container = d3.select("#chart-hist");
+    container.html("");
+
+    container.append("h2")
+      .attr("class", "chart-title")
+      .text("Number of Species Added to the Endangered Species List");
+
     const margin = { top: 20, right: 20, bottom: 60, left: 60 };
     const chartElement = document.getElementById('chart-hist');
     const containerWidth = chartElement.clientWidth || 800;
     const width = containerWidth - margin.left - margin.right;
     const height = 400 - margin.top - margin.bottom;
-    const svg = d3.select("#chart-hist")
+
+    const svg = container
       .append("svg")
       .attr("width", width + margin.left + margin.right)
       .attr("height", height + margin.top + margin.bottom)
       .append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
+
     const minYear = d3.min(data, d => d.year);
     const maxYear = d3.max(data, d => d.year);
     const start = Math.floor(minYear / 5) * 5;
     const end = Math.floor(maxYear / 5) * 5 + 4;
+
     const bins = [];
     for (let s = start; s <= end; s += 5) bins.push({ start: s, end: s + 4, label: `${s}–${s + 4}`, total: 0 });
+
     data.forEach(d => {
       const i = Math.floor((d.year - start) / 5);
       if (i >= 0 && i < bins.length) bins[i].total += d.listings;
     });
+
     const x = d3.scaleBand()
       .domain(bins.map(b => b.label))
       .range([0, width])
       .padding(0.1);
+
     const y = d3.scaleLinear()
       .domain([0, d3.max(bins, b => b.total)]).nice()
       .range([height, 0]);
+
     svg.selectAll("rect")
       .data(bins)
       .join("rect")
@@ -145,6 +160,7 @@ function renderHistogram5yr() {
       .attr("width", x.bandwidth())
       .attr("height", d => height - y(d.total))
       .attr("fill", "#69b3a2");
+
     const xAxis = d3.axisBottom(x);
     svg.append("g")
       .attr("transform", `translate(0,${height})`)
@@ -153,6 +169,7 @@ function renderHistogram5yr() {
       .style("font-size", "11px")
       .attr("transform", "rotate(0)")
       .style("text-anchor", "middle");
+
     const yAxis = d3.axisLeft(y).ticks(6);
     svg.append("g").call(yAxis);
   }).catch(error => {
