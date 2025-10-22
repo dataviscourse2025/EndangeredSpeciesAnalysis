@@ -117,15 +117,6 @@ d3.csv("data/endangered_species.csv").then(data => {
     .style("font-family", "Arial, sans-serif")
     .text(d => d.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()));
 
-  // --- Table population ---
-  const tbody = d3.select("#data-table tbody");
-  data.forEach(d => {
-    tbody.append("tr")
-      .html(`<td>${d.date.toLocaleDateString()}</td>
-             <td>${d.all_ani}</td>
-             <td>${d.endangered_mammals}</td>`);
-  });
-
   console.log("Chart creation completed successfully!");
 }).catch(error => {
   console.error("Error loading or processing data:", error);
