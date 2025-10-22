@@ -359,3 +359,4 @@ function renderHistogram5yr() {
 
 renderStackedArea();
 renderHistogram5yr();
+renderUSMap();
