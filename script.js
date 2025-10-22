@@ -162,10 +162,10 @@ function renderHistogram5yr() {
       .style("margin", "4px 0 12px 0")
       .style("font-size", "12px")
       .append("a")
-      .attr("href", "https://www.fws.gov/page/endangered-species-act-amendments")
+      .attr("href", "https://data.virginia.gov/dataset/u-s-federal-endangered-and-threatened-species-by-calendar-year")
       .attr("target", "_blank")
       .attr("rel", "noopener noreferrer")
-      .text("https://www.fws.gov/page/endangered-species-act-amendments");
+      .text("https://data.virginia.gov/dataset/u-s-federal-endangered-and-threatened-species-by-calendar-years");
 
     const margin = { top: 20, right: 20, bottom: 60, left: 70 };
     const chartElement = document.getElementById('chart-hist');
