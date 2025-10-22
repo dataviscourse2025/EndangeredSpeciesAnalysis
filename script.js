@@ -71,10 +71,12 @@ function renderStackedArea() {
       .attr("y1", 0)
       .attr("y2", height)
       .attr("stroke", "black")
-      .attr("stroke-width", 1);
+      .attr("stroke-width", 1)
+      .text("Year");
     const yAxis = d3.axisLeft(y).ticks(5);
     svg.append("g")
       .call(yAxis)
+      .text("Number of Endangered Species")
       .selectAll("path, line")
       .attr("stroke", "black");
     const legend = svg.append("g").attr("class", "legend");
@@ -173,10 +175,12 @@ function renderHistogram5yr() {
       .selectAll("text")
       .style("font-size", "11px")
       .attr("transform", "rotate(0)")
-      .style("text-anchor", "middle");
+      .style("text-anchor", "middle")
+      .text("Year");
 
     const yAxis = d3.axisLeft(y).ticks(6);
-    svg.append("g").call(yAxis);
+    svg.append("g").call(yAxis)
+      .text("Number of New Species Listings");
   }).catch(error => {
     console.error("Error loading or processing data:", error);
   });
