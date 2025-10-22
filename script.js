@@ -285,7 +285,7 @@ function renderUSMap() {
 
   const projection = d3.geoAlbersUsa()
   .translate([width / 2, height / 2])
-  .scale(1000); 
+  .scale(1200); 
   const path = d3.geoPath().projection(projection);
 
   Promise.all([
