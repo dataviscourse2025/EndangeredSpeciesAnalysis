@@ -165,7 +165,7 @@ function renderHistogram5yr() {
       .attr("href", "https://www.fws.gov/page/endangered-species-act-amendments")
       .attr("target", "_blank")
       .attr("rel", "noopener noreferrer")
-      .text("Source: https://www.fws.gov/page/endangered-species-act-amendments");
+      .text("https://www.fws.gov/page/endangered-species-act-amendments");
 
     const margin = { top: 20, right: 20, bottom: 60, left: 70 };
     const chartElement = document.getElementById('chart-hist');
