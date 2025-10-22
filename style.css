@@ -8,7 +8,8 @@ h1 {
   margin-bottom: 20px;
 }
 #chart,
-#chart-hist {
+#chart-hist,
+#chart-map {
   width: 90%;
   margin: 0 auto 40px auto;
   background-color: white;
@@ -17,7 +18,8 @@ h1 {
   box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
 #chart svg,
-#chart-hist svg {
+#chart-hist svg
+#chart-map svg {
   display: block;
   width: 100%;
   height: auto;
