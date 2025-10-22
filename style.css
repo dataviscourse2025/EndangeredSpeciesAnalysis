@@ -43,27 +43,3 @@ h1 {
   font-size: 12px;
   fill: #333;
 }
-
-table {
-  width: 90%;
-  margin: 0 auto;
-  border-collapse: collapse;
-  background-color: white;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
-}
-
-th, td {
-  padding: 10px;
-  text-align: left;
-  border-bottom: 1px solid #ddd;
-}
-
-th {
-  background-color: #f2f2f2;
-}
-
-tr:hover {
-  background-color: #f1f1f1;
-}
