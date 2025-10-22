@@ -156,6 +156,17 @@ function renderHistogram5yr() {
       .attr("class", "chart-title")
       .text("Number of Species Added to the Endangered Species List");
 
+    container.append("div")
+      .attr("class", "chart-subtitle")
+      .style("text-align", "center")
+      .style("margin", "4px 0 12px 0")
+      .style("font-size", "12px")
+      .append("a")
+      .attr("href", "https://www.fws.gov/page/endangered-species-act-amendments")
+      .attr("target", "_blank")
+      .attr("rel", "noopener noreferrer")
+      .text("Source: https://www.fws.gov/page/endangered-species-act-amendments");
+
     const margin = { top: 20, right: 20, bottom: 60, left: 70 };
     const chartElement = document.getElementById('chart-hist');
     const containerWidth = chartElement.clientWidth || 800;
@@ -230,6 +241,7 @@ function renderHistogram5yr() {
     console.error("Error loading or processing data:", error);
   });
 }
+
 
 renderStackedArea();
 renderHistogram5yr();
