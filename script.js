@@ -172,7 +172,7 @@ function renderUSMap() {
 
   Promise.all([
     d3.json("https://d3js.org/us-10m.v1.json"),
-    d3.csv("data/endangered_2019.csv")
+    d3.csv("data/endangered_by_state_2019.csv")
   ]).then(([us, csvData]) => {
     const data = {};
     let maxVal = 0;
