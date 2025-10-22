@@ -122,7 +122,7 @@ function renderHistogram5yr() {
       .attr("class", "chart-title")
       .text("Number of Species Added to the Endangered Species List");
 
-    const margin = { top: 20, right: 20, bottom: 60, left: 60 };
+    const margin = { top: 20, right: 20, bottom: 60, left: 70 };
     const chartElement = document.getElementById('chart-hist');
     const containerWidth = chartElement.clientWidth || 800;
     const width = containerWidth - margin.left - margin.right;
@@ -177,6 +177,21 @@ function renderHistogram5yr() {
 
     const yAxis = d3.axisLeft(y).ticks(6);
     svg.append("g").call(yAxis);
+
+    svg.append("text")
+      .attr("x", width / 2)
+      .attr("y", height + 40)
+      .attr("text-anchor", "middle")
+      .style("font-size", "12px")
+      .text("Year");
+
+    svg.append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("x", -height / 2)
+      .attr("y", -50)
+      .attr("text-anchor", "middle")
+      .style("font-size", "12px")
+      .text("Number of Species");
   }).catch(error => {
     console.error("Error loading or processing data:", error);
   });
