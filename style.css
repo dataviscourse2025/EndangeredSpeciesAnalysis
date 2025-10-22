@@ -3,13 +3,12 @@ body {
   margin: 40px;
   background-color: #f9f9f9;
 }
-
 h1 {
   text-align: center;
   margin-bottom: 20px;
 }
-
-#chart {
+#chart,
+#chart-hist {
   width: 90%;
   margin: 0 auto 40px auto;
   background-color: white;
@@ -17,8 +16,8 @@ h1 {
   border-radius: 8px;
   box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
-
-#chart svg {
+#chart svg,
+#chart-hist svg {
   display: block;
   width: 100%;
   height: auto;
@@ -28,7 +27,6 @@ h1 {
   stroke: none;
 }
 
-/* Legend styles */
 .legend {
   font-family: Arial, sans-serif;
 }
