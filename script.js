@@ -409,3 +409,16 @@ function renderUSMap() {
 renderStackedArea();
 renderHistogram5yr();
 renderUSMap();
+
+
+// Footer link under the graphs
+container.append("p")
+  .attr("class", "process-book")
+  .style("margin", "16px 0 40px")
+  .style("font-size", "12px")
+  .html(
+    `Process Book: <a href="https://docs.google.com/document/d/1inqMCG3sclhjJdvcv6JamtF6awbrJH3HxLTgbcfDhYU/edit?tab=t.0"
+       target="_blank" rel="noopener noreferrer">
+       https://docs.google.com/document/d/1inqMCG3sclhjJdvcv6JamtF6awbrJH3HxLTgbcfDhYU/edit?tab=t.0
+     </a>`
+  );
