@@ -1,11 +1,21 @@
+// By Sydney Lundberg and Victoria Mache
+
+/**
+ * Creates a stacked area chart of endangered animal species (by class).
+ * Loads the CSV, parses dates, coerces counts to numbers, filters invalid rows,
+ * then draws the SVG with axes, labels, and legend.
+ */
 function renderStackedArea() {
   d3.csv("data/endangered_species.csv").then(data => {
     const container = d3.select("#chart");
     container.html("");
+
+    //Title
     container.append("h2")
       .attr("class", "chart-title")
       .text("Number of Endangered Animal Species Per Class");
 
+    // Subtitle to cite the website where we got the data set and historical info from
     container.append("div")
       .attr("class", "chart-subtitle")
       .style("margin", "2px 0 8px 0")
@@ -19,6 +29,7 @@ function renderStackedArea() {
         </a>`
       );
 
+    // Parse the date and create the stacked area chart, while removing null rows
     const parseDate = d3.timeParse("%-d %b %y");
     data.forEach((d) => {
       d.date = parseDate(d.date);
@@ -28,12 +39,14 @@ function renderStackedArea() {
     });
     data = data.filter(d => d.date !== null);
 
+    // Set the margin and width and height of the chart
     const margin = { top: 20, right: 160, bottom: 60, left: 70 };
     const chartElement = document.getElementById('chart');
     const containerWidth = chartElement.clientWidth || 800;
     const width = containerWidth - margin.left - margin.right;
     const height = 400 - margin.top - margin.bottom;
 
+    // Create the SVG element
     const svg = container
       .append("svg")
       .attr("width", width + margin.left + margin.right)
@@ -41,6 +54,7 @@ function renderStackedArea() {
       .append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
 
+    // Create the keys
     const keys = [
       "endangered_mammals",
       "endangered_birds",
@@ -105,6 +119,7 @@ function renderStackedArea() {
       .selectAll("path, line")
       .attr("stroke", "black");
 
+    // Create the legend
     const legend = svg.append("g").attr("class", "legend");
     const legendHeight = keys.length * 22;
     const legendX = width + 20;
@@ -135,6 +150,7 @@ function renderStackedArea() {
         .replace(/\b\w/g, l => l.toUpperCase())
       );
 
+    // The x-axis label
     svg.append("text")
       .attr("x", width / 2)
       .attr("y", height + 40)
@@ -142,6 +158,7 @@ function renderStackedArea() {
       .style("font-size", "12px")
       .text("Year");
 
+    // The y-axis label
     svg.append("text")
       .attr("transform", "rotate(-90)")
       .attr("x", -height / 2)
@@ -149,6 +166,8 @@ function renderStackedArea() {
       .attr("text-anchor", "middle")
       .style("font-size", "12px")
       .text("Number of Species");
+
+    // Error handling
   }).catch(error => {
     console.error("Error loading or processing data:", error);
   });
@@ -165,10 +184,12 @@ function renderHistogram5yr() {
     const container = d3.select("#chart-hist");
     container.html("");
 
+    // Title
     container.append("h2")
       .attr("class", "chart-title")
       .text("Number of Species Added to the Endangered Species List");
 
+      // Subtitle to cite the website where we got the data set and historical info from
       container.append("div")
       .attr("class", "chart-subtitle")
       .style("text-align", "left")
@@ -182,12 +203,14 @@ function renderHistogram5yr() {
         </a>`
       );
       
+    // Set the margin and width and height of the chart
     const margin = { top: 20, right: 20, bottom: 60, left: 70 };
     const chartElement = document.getElementById('chart-hist');
     const containerWidth = chartElement.clientWidth || 800;
     const width = containerWidth - margin.left - margin.right;
     const height = 400 - margin.top - margin.bottom;
 
+    // Create the SVG element
     const svg = container
       .append("svg")
       .attr("width", width + margin.left + margin.right)
@@ -195,11 +218,11 @@ function renderHistogram5yr() {
       .append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
 
+    // Create and populate the bins
     const minYear = d3.min(data, d => d.year);
     const maxYear = d3.max(data, d => d.year);
     const start = Math.floor(minYear / 5) * 5;
     const end = Math.floor(maxYear / 5) * 5 + 4;
-
     const bins = [];
     for (let s = start; s <= end; s += 5) bins.push({ start: s, end: s + 4, label: `${s}–${s + 4}`, total: 0 });
 
@@ -217,6 +240,7 @@ function renderHistogram5yr() {
       .domain([0, d3.max(bins, b => b.total)]).nice()
       .range([height, 0]);
 
+    // Create the bars
     svg.selectAll("rect")
       .data(bins)
       .join("rect")
@@ -238,6 +262,7 @@ function renderHistogram5yr() {
     const yAxis = d3.axisLeft(y).ticks(6);
     svg.append("g").call(yAxis);
 
+    // The x-axis label
     svg.append("text")
       .attr("x", width / 2)
       .attr("y", height + 40)
@@ -245,6 +270,7 @@ function renderHistogram5yr() {
       .style("font-size", "12px")
       .text("Year");
 
+    // The y-axis label
     svg.append("text")
       .attr("transform", "rotate(-90)")
       .attr("x", -height / 2)
@@ -252,6 +278,8 @@ function renderHistogram5yr() {
       .attr("text-anchor", "middle")
       .style("font-size", "12px")
       .text("Number of Species");
+
+    // Error handling
   }).catch(error => {
     console.error("Error loading or processing data:", error);
   });
@@ -260,6 +288,8 @@ function renderHistogram5yr() {
 function renderUSMap() {
   const container = d3.select("#chart-map");
   container.html("");
+
+  // Title
   container.append("h2")
     .attr("class", "chart-title")
     .text("US Endangered Species by State (2019)");
@@ -334,7 +364,6 @@ function renderUSMap() {
         d3.select(this).attr("stroke", "#fff").attr("stroke-width", 1);
       });
 
-    // Optional legend
     const legendWidth = 200;
     const legendHeight = 10;
     const legendMargin = { top: 20, right: 20, bottom: 40, left: 20 };
@@ -371,9 +400,12 @@ function renderUSMap() {
       .attr("text-anchor", "end")
       .text("High");
 
-  }).catch(error => console.error("Error loading map or data:", error));
+    // Error handling
+  }).catch(error => 
+    console.error("Error loading map or data:", error));
 }
 
+// Render charts
 renderStackedArea();
 renderHistogram5yr();
 renderUSMap();
