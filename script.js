@@ -319,7 +319,7 @@ function renderUSMap() {
   const path = d3.geoPath().projection(projection);
 
   Promise.all([
-    d3.json("https://d3js.org/us-10m.v1.json"),
+    d3.json("https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json"),
     d3.csv("data/endangered_by_state_2019.csv")
   ]).then(([us, csvData]) => {
     const data = {};
