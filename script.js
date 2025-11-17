@@ -194,7 +194,7 @@ function renderHistogram5yr() {
       .attr("class", "chart-subtitle")
       .style("text-align", "left")
       .style("margin", "4px 0 12px 0")
-      .style("font-size", "12px")
+      .style("font-size", "16px")
       .append("a")
       .html(
         `Source: 
