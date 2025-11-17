@@ -297,7 +297,7 @@ function renderUSMap() {
   const width = 960;
   const height = 600;
 
-  // Normalization helper (for matching state names robustly)
+  // Helper to normalize state names consistently
   const normalize = str => str.trim().toLowerCase();
 
   const svg = container.append("svg")
@@ -329,7 +329,7 @@ function renderUSMap() {
     const data = {};
     let maxVal = 0;
 
-    // Store values with normalized state names
+    // Store values using *normalized* state names
     csvData.forEach(d => {
       const val = +d["Endangered (Total) 2019"];
       const key = normalize(d.State);
@@ -348,19 +348,20 @@ function renderUSMap() {
       .attr("class", "state")
       .attr("d", path)
       .attr("fill", d => {
-        const stateNameNorm = normalize(d.properties.name || d.id);
-        const val = data[stateNameNorm];
-        return val !== undefined ? color(val) : "#eee";
+        const rawName = d.properties.name || d.id;
+        const key = normalize(rawName);
+        const v = data[key];
+        return v !== undefined ? color(v) : "#eee";
       })
       .attr("stroke", "#fff")
       .attr("stroke-width", 1)
       .on("mouseover", function(event, d) {
-        const stateName = d.properties.name || d.id;
-        const val = data[normalize(stateName)];
-        const value = val !== undefined ? val : "No data";
+        const rawName = d.properties.name || d.id;
+        const key = normalize(rawName);
+        const value = data[key] !== undefined ? data[key] : "No data";
 
         tooltip.transition().duration(100).style("opacity", 1);
-        tooltip.html(`<strong>${stateName}</strong><br/>Endangered: ${value}`)
+        tooltip.html(`<strong>${rawName}</strong><br/>Endangered: ${value}`)
           .style("left", (event.pageX + 10) + "px")
           .style("top", (event.pageY + 10) + "px");
 
@@ -387,7 +388,7 @@ function renderUSMap() {
     linearGradient.selectAll("stop")
       .data(d3.range(0, 1.01, 0.01))
       .join("stop")
-      .attr("offset", d => `${d * 100}%`)
+      .attr("offset", d => d)
       .attr("stop-color", d => color(d * maxVal));
 
     svg.append("rect")
@@ -411,10 +412,10 @@ function renderUSMap() {
       .style("font-size", "12px")
       .attr("text-anchor", "end")
       .text("High");
-  }).catch(error =>
-    console.error("Error loading map or data:", error)
-  );
+  }).catch(error => 
+    console.error("Error loading map or data:", error));
 }
+
 
 
 // Render charts
