@@ -301,6 +301,7 @@ function renderUSMap() {
     .attr("width", width)
     .attr("height", height);
 
+  // Tooltip
   const tooltip = container.append("div")
     .attr("id", "tooltip")
     .attr("class", "tooltip")
@@ -313,36 +314,42 @@ function renderUSMap() {
     .style("pointer-events", "none")
     .style("font-size", "12px");
 
+  // Projection + path
   const projection = d3.geoAlbersUsa()
     .translate([width / 2, height / 2])
     .scale(1200);
 
   const path = d3.geoPath().projection(projection);
 
-  // helper to normalize names consistently
+  // Normalize function
   const normalize = str => str.trim().toLowerCase();
 
+  // Load topojson + CSV
   Promise.all([
     d3.json("https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json"),
     d3.csv("data/endangered_by_state_2019.csv")
   ]).then(([us, csvData]) => {
 
-    // Build lookup: normalized state name -> endangered count
+    // Build lookup table
     const data = {};
     let maxVal = 0;
 
     csvData.forEach(d => {
       const val = +d["Endangered (Total) 2019"];
-      const key = normalize(d.State);      // 👈 normalized here
+      const key = normalize(d.State);
+
       data[key] = val;
       if (val > maxVal) maxVal = val;
     });
+
+    console.log("CSV keys sample:", Object.keys(data).slice(0, 5));
 
     // Color scale
     const color = d3.scaleSequential()
       .domain([0, maxVal])
       .interpolator(d3.interpolateReds);
 
+    // Draw states
     svg.append("g")
       .selectAll("path")
       .data(topojson.feature(us, us.objects.states).features)
@@ -350,30 +357,34 @@ function renderUSMap() {
       .attr("class", "state")
       .attr("d", path)
       .attr("fill", d => {
-        const stateKey = normalize(d.properties.name || d.id);  // 👈 same normalization
-        const val = data[stateKey];
+        const stateName = normalize(d.properties.name || d.id);
+        const val = data[stateName];
         return val !== undefined ? color(val) : "#eee";
       })
       .attr("stroke", "#fff")
       .attr("stroke-width", 1)
       .on("mouseover", function(event, d) {
-        const stateKey = normalize(d.properties.name || d.id);
-        const value = data[stateKey] !== undefined ? data[stateKey] : "No data";
+        const name = d.properties.name;
+        const value = data[normalize(name)] ?? "No data";
 
-        tooltip.transition().duration(100).style("opacity", 1);
-        tooltip.html(`<strong>${d.properties.name}</strong><br/>Endangered: ${value}`)
+        tooltip.style("opacity", 1)
+          .html(`<strong>${name}</strong><br/>Endangered: ${value}`)
           .style("left", (event.pageX + 10) + "px")
           .style("top", (event.pageY + 10) + "px");
-
-        d3.select(this).attr("stroke", "#000").attr("stroke-width", 2);
+        
+        d3.select(this)
+          .attr("stroke", "#000")
+          .attr("stroke-width", 2);
       })
       .on("mousemove", function(event) {
         tooltip.style("left", (event.pageX + 10) + "px")
                .style("top", (event.pageY + 10) + "px");
       })
       .on("mouseout", function() {
-        tooltip.transition().duration(100).style("opacity", 0);
-        d3.select(this).attr("stroke", "#fff").attr("stroke-width", 1);
+        tooltip.style("opacity", 0);
+        d3.select(this)
+          .attr("stroke", "#fff")
+          .attr("stroke-width", 1);
       });
 
     // Legend
@@ -381,10 +392,10 @@ function renderUSMap() {
     const legendHeight = 10;
 
     const defs = svg.append("defs");
-    const linearGradient = defs.append("linearGradient")
+    const gradient = defs.append("linearGradient")
       .attr("id", "legend-gradient");
 
-    linearGradient.selectAll("stop")
+    gradient.selectAll("stop")
       .data(d3.range(0, 1.01, 0.01))
       .join("stop")
       .attr("offset", d => d)
@@ -395,9 +406,8 @@ function renderUSMap() {
       .attr("y", height - 30)
       .attr("width", legendWidth)
       .attr("height", legendHeight)
-      .style("fill", "url(#legend-gradient)")
-      .style("stroke", "#999")
-      .style("stroke-width", 0.5);
+      .attr("fill", "url(#legend-gradient)")
+      .attr("stroke", "#999");
 
     svg.append("text")
       .attr("x", width - legendWidth - 20)
@@ -412,12 +422,11 @@ function renderUSMap() {
       .attr("text-anchor", "end")
       .text("High");
 
-    console.log("Data keys sample:", Object.keys(data).slice(0, 5));
-  
-
-  }).catch(error => 
-    console.error("Error loading map or data:", error));
+  }).catch(err => {
+    console.error("Error loading map or data:", err);
+  });
 }
+
 
 
 
