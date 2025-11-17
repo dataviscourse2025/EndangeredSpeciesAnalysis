@@ -335,7 +335,7 @@ function renderUSMap() {
       }
     });
 
-    const color = d3.scaleLinear().domain([0, 100, maxVal]).range(["#ff8a80", "#b30000", "#2b0000"]);
+    const color = d3.scaleLinear().domain([0, 200, maxVal]).range(["#ff8a80", "#b30000", "#2b0000"]);
 
     const allStates = topojson.feature(us, us.objects.states).features;
 
