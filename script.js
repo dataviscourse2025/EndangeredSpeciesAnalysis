@@ -297,8 +297,8 @@ function renderUSMap() {
   const width = 960;
   const height = 600;
 
-  // Helper to normalize state names consistently
-  const normalize = str => str.trim().toLowerCase();
+  // Helper to normalize state names so CSV + TopoJSON match
+  const normalize = str => str ? str.trim().toLowerCase() : "";
 
   const svg = container.append("svg")
     .attr("width", width)
@@ -319,20 +319,20 @@ function renderUSMap() {
   const projection = d3.geoAlbersUsa()
     .translate([width / 2, height / 2])
     .scale(1200);
-
   const path = d3.geoPath().projection(projection);
 
   Promise.all([
     d3.json("https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json"),
     d3.csv("data/endangered_by_state_2019.csv")
   ]).then(([us, csvData]) => {
+
+    // Build lookup: normalized state name -> value
     const data = {};
     let maxVal = 0;
 
-    // Store values using *normalized* state names
     csvData.forEach(d => {
       const val = +d["Endangered (Total) 2019"];
-      const key = normalize(d.State);
+      const key = normalize(d.State); // e.g. "alabama"
       data[key] = val;
       if (val > maxVal) maxVal = val;
     });
@@ -348,29 +348,27 @@ function renderUSMap() {
       .attr("class", "state")
       .attr("d", path)
       .attr("fill", d => {
-        const rawName = d.properties.name || d.id;
-        const key = normalize(rawName);
+        const key = normalize(d.properties.name || d.id); // normalize topo name
         const v = data[key];
         return v !== undefined ? color(v) : "#eee";
       })
       .attr("stroke", "#fff")
       .attr("stroke-width", 1)
       .on("mouseover", function(event, d) {
-        const rawName = d.properties.name || d.id;
-        const key = normalize(rawName);
-        const value = data[key] !== undefined ? data[key] : "No data";
+        const name = d.properties.name || d.id;
+        const v = data[normalize(name)];
+        const value = v !== undefined ? v : "No data";
 
         tooltip.transition().duration(100).style("opacity", 1);
-        tooltip.html(`<strong>${rawName}</strong><br/>Endangered: ${value}`)
+        tooltip.html(`<strong>${name}</strong><br/>Endangered: ${value}`)
           .style("left", (event.pageX + 10) + "px")
           .style("top", (event.pageY + 10) + "px");
 
         d3.select(this).attr("stroke", "#000").attr("stroke-width", 2);
       })
       .on("mousemove", function(event) {
-        tooltip
-          .style("left", (event.pageX + 10) + "px")
-          .style("top", (event.pageY + 10) + "px");
+        tooltip.style("left", (event.pageX + 10) + "px")
+               .style("top", (event.pageY + 10) + "px");
       })
       .on("mouseout", function() {
         tooltip.transition().duration(100).style("opacity", 0);
@@ -412,10 +410,10 @@ function renderUSMap() {
       .style("font-size", "12px")
       .attr("text-anchor", "end")
       .text("High");
+
   }).catch(error => 
     console.error("Error loading map or data:", error));
 }
-
 
 
 // Render charts
