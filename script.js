@@ -422,6 +422,8 @@ function renderUSMap() {
       .attr("text-anchor", "end")
       .text("High");
 
+    console.log(Object.keys(data));
+
   }).catch(err => {
     console.error("Error loading map or data:", err);
   });
