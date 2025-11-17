@@ -327,7 +327,7 @@ function renderUSMap() {
     let maxVal = 0;
 
     csvData.forEach(d => {
-      const key = normalize(d.State); // e.g. "alabama"
+      const key = normalize(d.State); 
       const val = +d["Endangered (Total) 2019"];
       if (!isNaN(val)) {
         data[key] = val;
