@@ -82,7 +82,7 @@ function renderStackedArea() {
 
     const color = d3.scaleOrdinal()
       .domain(keys)
-      .range(d3.schemeCategory10);
+      .range(d3.schemeSet3);
 
     const area = d3.area()
       .x(d => x(d.data.date))
