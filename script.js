@@ -294,7 +294,7 @@ function renderUSMap() {
     .attr("class", "chart-title")
     .text("US Endangered Species by State (2019)");
 
-  const width  = 960;
+  const width = 960;
   const height = 600;
 
   const svg = container.append("svg")
@@ -319,81 +319,82 @@ function renderUSMap() {
 
   const path = d3.geoPath().projection(projection);
 
-  // helper used consistently in *both* CSV + TopoJSON
-  const normalize = s => s ? s.trim().toLowerCase() : "";
-
   Promise.all([
     d3.json("https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json"),
     d3.csv("data/endangered_by_state_2019.csv")
   ]).then(([us, csvData]) => {
-    // --- build lookup from CSV ---
+    // normalize helper (same for topoJSON names and CSV names)
+    const normalize = str => str.trim().toLowerCase();
+
+    // 1) Build lookup: normalized state name -> endangered count
     const data = {};
     let maxVal = 0;
 
     csvData.forEach(d => {
+      const key = normalize(d.State); // e.g. "alabama"
       const val = +d["Endangered (Total) 2019"];
-      const key = normalize(d.State);     // e.g. "hawaii"
-      data[key] = val;
-      if (val > maxVal) maxVal = val;
+      if (!isNaN(val)) {
+        data[key] = val;
+        if (val > maxVal) maxVal = val;
+      }
     });
 
-    console.log("Data keys sample:", Object.keys(data).slice(0, 5));
-
-    // --- color scale ---
+    // 2) Color scale
     const color = d3.scaleSequential()
       .domain([0, maxVal])
       .interpolator(d3.interpolateReds);
 
-    // --- topo features ---
-    const states = topojson.feature(us, us.objects.states).features;
-    console.log(
-      "Topo state names sample:",
-      states.slice(0, 5).map(f => f.properties.name)
-    );
+    // 3) Get all topoJSON state features
+    const allStates = topojson.feature(us, us.objects.states).features;
 
+    // 4) Filter to only states we actually have data for (no DC/territories)
+    const usableStates = allStates.filter(f => {
+      const key = normalize(f.properties.name || f.id);
+      const hasData = Object.prototype.hasOwnProperty.call(data, key);
+      // If you still want to log missing ones, uncomment:
+      // if (!hasData) console.log("Skipping state with no data:", f.properties.name || f.id, "-> key:", key);
+      return hasData;
+    });
+
+    // 5) Draw the states
     svg.append("g")
       .selectAll("path")
-      .data(states)
+      .data(usableStates)
       .join("path")
       .attr("class", "state")
       .attr("d", path)
       .attr("fill", d => {
-        const topoName = d.properties.name || d.id;      // e.g. "Hawaii"
-        const key = normalize(topoName);                 // e.g. "hawaii"
-        const value = data[key];
-
-        if (value === undefined) {
-          // helpful debug; you can comment out later
-          console.log("No data for state:", topoName, "-> key:", key);
-          return "#eee";
-        }
-        return color(value);
+        const key = normalize(d.properties.name || d.id);
+        return color(data[key]);  // guaranteed to exist because of filter
       })
       .attr("stroke", "#fff")
       .attr("stroke-width", 1)
       .on("mouseover", function (event, d) {
-        const topoName = d.properties.name || d.id;
-        const key = normalize(topoName);
-        const value = data[key] !== undefined ? data[key] : "No data";
+        const key = normalize(d.properties.name || d.id);
+        const stateName = d.properties.name || d.id;
+        const value = data[key];
 
         tooltip.transition().duration(100).style("opacity", 1);
-        tooltip.html(`<strong>${topoName}</strong><br/>Endangered: ${value}`)
+        tooltip.html(
+          `<strong>${stateName}</strong><br/>Endangered: ${value}`
+        )
           .style("left", (event.pageX + 10) + "px")
           .style("top", (event.pageY + 10) + "px");
 
         d3.select(this).attr("stroke", "#000").attr("stroke-width", 2);
       })
       .on("mousemove", function (event) {
-        tooltip.style("left", (event.pageX + 10) + "px")
-               .style("top", (event.pageY + 10) + "px");
+        tooltip
+          .style("left", (event.pageX + 10) + "px")
+          .style("top", (event.pageY + 10) + "px");
       })
       .on("mouseout", function () {
         tooltip.transition().duration(100).style("opacity", 0);
         d3.select(this).attr("stroke", "#fff").attr("stroke-width", 1);
       });
 
-    // --- legend ---
-    const legendWidth  = 200;
+    // 6) Legend
+    const legendWidth = 200;
     const legendHeight = 10;
 
     const defs = svg.append("defs");
@@ -403,7 +404,7 @@ function renderUSMap() {
     linearGradient.selectAll("stop")
       .data(d3.range(0, 1.01, 0.01))
       .join("stop")
-      .attr("offset", d => d)
+      .attr("offset", d => `${d * 100}%`)
       .attr("stop-color", d => color(d * maxVal));
 
     svg.append("rect")
@@ -427,10 +428,12 @@ function renderUSMap() {
       .style("font-size", "12px")
       .attr("text-anchor", "end")
       .text("High");
-  }).catch(error => {
-    console.error("Error loading map or data:", error);
-  });
+
+  }).catch(error =>
+    console.error("Error loading map or data:", error)
+  );
 }
+
 
 
 
