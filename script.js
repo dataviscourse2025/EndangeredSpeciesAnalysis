@@ -194,8 +194,6 @@ function renderHistogram5yr() {
       .attr("class", "chart-subtitle")
       .style("text-align", "left")
       .style("margin", "4px 0 12px 0")
-      .style("font-size", "16px")
-      .append("a")
       .html(
         `Source: 
         <a href="https://data.virginia.gov/dataset/u-s-federal-endangered-and-threatened-species-by-calendar-year" target="_blank" rel="noopener noreferrer">
@@ -337,7 +335,7 @@ function renderUSMap() {
       }
     });
 
-    const color = d3.scaleLinear().domain([0, maxVal]).range(["#fcbba1", "#7f0000", "#67000d"]);
+    const color = d3.scaleLinear().domain([0, maxVal]).range(["#fde0dd", "#7f0000", "#67000d"]);
 
     const allStates = topojson.feature(us, us.objects.states).features;
 
@@ -348,7 +346,6 @@ function renderUSMap() {
       return hasData;
     });
 
-    // 5) Draw the states
     svg.append("g")
       .selectAll("path")
       .data(usableStates)
