@@ -323,10 +323,8 @@ function renderUSMap() {
     d3.json("https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json"),
     d3.csv("data/endangered_by_state_2019.csv")
   ]).then(([us, csvData]) => {
-    // normalize helper (same for topoJSON names and CSV names)
     const normalize = str => str.trim().toLowerCase();
 
-    // 1) Build lookup: normalized state name -> endangered count
     const data = {};
     let maxVal = 0;
 
@@ -339,20 +337,14 @@ function renderUSMap() {
       }
     });
 
-    // 2) Color scale
-    const color = d3.scaleSequential()
-      .domain([0, maxVal])
-      .interpolator(d3.interpolateReds);
+    const color = d3.scaleLinear().domain([0, maxVal]).range(["#fcbba1", "#7f0000", "#67000d"]);
 
-    // 3) Get all topoJSON state features
     const allStates = topojson.feature(us, us.objects.states).features;
 
-    // 4) Filter to only states we actually have data for (no DC/territories)
     const usableStates = allStates.filter(f => {
       const key = normalize(f.properties.name || f.id);
       const hasData = Object.prototype.hasOwnProperty.call(data, key);
-      // If you still want to log missing ones, uncomment:
-      // if (!hasData) console.log("Skipping state with no data:", f.properties.name || f.id, "-> key:", key);
+  
       return hasData;
     });
 
