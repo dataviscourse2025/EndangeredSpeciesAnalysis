@@ -297,9 +297,9 @@ function renderUSMap() {
   const width = 960;
   const height = 600;
 
+  // Normalization helper (for matching state names robustly)
   const normalize = str => str.trim().toLowerCase();
-  data[normalize(d.State)] = val;
-  
+
   const svg = container.append("svg")
     .attr("width", width)
     .attr("height", height);
@@ -317,8 +317,9 @@ function renderUSMap() {
     .style("font-size", "12px");
 
   const projection = d3.geoAlbersUsa()
-  .translate([width / 2, height / 2])
-  .scale(1200); 
+    .translate([width / 2, height / 2])
+    .scale(1200);
+
   const path = d3.geoPath().projection(projection);
 
   Promise.all([
@@ -327,9 +328,12 @@ function renderUSMap() {
   ]).then(([us, csvData]) => {
     const data = {};
     let maxVal = 0;
+
+    // Store values with normalized state names
     csvData.forEach(d => {
       const val = +d["Endangered (Total) 2019"];
-      data[d.State] = val;
+      const key = normalize(d.State);
+      data[key] = val;
       if (val > maxVal) maxVal = val;
     });
 
@@ -344,32 +348,37 @@ function renderUSMap() {
       .attr("class", "state")
       .attr("d", path)
       .attr("fill", d => {
-        const stateName = normalize(d.properties.name || d.id);
-        return data[stateName] !== undefined ? color(data[stateName]) : "#eee";
+        const stateNameNorm = normalize(d.properties.name || d.id);
+        const val = data[stateNameNorm];
+        return val !== undefined ? color(val) : "#eee";
       })
       .attr("stroke", "#fff")
       .attr("stroke-width", 1)
       .on("mouseover", function(event, d) {
         const stateName = d.properties.name || d.id;
-        const value = data[stateName] !== undefined ? data[stateName] : "No data";
+        const val = data[normalize(stateName)];
+        const value = val !== undefined ? val : "No data";
+
         tooltip.transition().duration(100).style("opacity", 1);
         tooltip.html(`<strong>${stateName}</strong><br/>Endangered: ${value}`)
           .style("left", (event.pageX + 10) + "px")
           .style("top", (event.pageY + 10) + "px");
+
         d3.select(this).attr("stroke", "#000").attr("stroke-width", 2);
       })
       .on("mousemove", function(event) {
-        tooltip.style("left", (event.pageX + 10) + "px")
-               .style("top", (event.pageY + 10) + "px");
+        tooltip
+          .style("left", (event.pageX + 10) + "px")
+          .style("top", (event.pageY + 10) + "px");
       })
       .on("mouseout", function() {
         tooltip.transition().duration(100).style("opacity", 0);
         d3.select(this).attr("stroke", "#fff").attr("stroke-width", 1);
       });
 
+    // Legend
     const legendWidth = 200;
     const legendHeight = 10;
-    const legendMargin = { top: 20, right: 20, bottom: 40, left: 20 };
 
     const defs = svg.append("defs");
     const linearGradient = defs.append("linearGradient")
@@ -378,7 +387,7 @@ function renderUSMap() {
     linearGradient.selectAll("stop")
       .data(d3.range(0, 1.01, 0.01))
       .join("stop")
-      .attr("offset", d => d)
+      .attr("offset", d => `${d * 100}%`)
       .attr("stop-color", d => color(d * maxVal));
 
     svg.append("rect")
@@ -402,11 +411,11 @@ function renderUSMap() {
       .style("font-size", "12px")
       .attr("text-anchor", "end")
       .text("High");
-
-    // Error handling
-  }).catch(error => 
-    console.error("Error loading map or data:", error));
+  }).catch(error =>
+    console.error("Error loading map or data:", error)
+  );
 }
+
 
 // Render charts
 renderStackedArea();
