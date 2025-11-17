@@ -82,7 +82,7 @@ function renderStackedArea() {
 
     const color = d3.scaleOrdinal()
       .domain(keys)
-      .range(d3.schemeSet3);
+      .range(d3.d3.schemeCategory10);
 
     const area = d3.area()
       .x(d => x(d.data.date))
@@ -412,12 +412,12 @@ renderUSMap();
 
 
 // Process book link under the graphs
-d3.select("#charts-footer")
-  .html(
-    `Process Book: <a href="https://docs.google.com/document/d/1inqMCG3sclhjJdvcv6JamtF6awbrJH3HxLTgbcfDhYU/edit?tab=t.0"
-       target="_blank" rel="noopener noreferrer">
-       https://docs.google.com/document/d/1inqMCG3sclhjJdvcv6JamtF6awbrJH3HxLTgbcfDhYU/edit?tab=t.0
-     </a>`
-  )
-  .style("margin", "16px 0 40px")
-  .style("font-size", "12px");
+// d3.select("#charts-footer")
+//   .html(
+//     `Process Book: <a href="https://docs.google.com/document/d/1inqMCG3sclhjJdvcv6JamtF6awbrJH3HxLTgbcfDhYU/edit?tab=t.0"
+//        target="_blank" rel="noopener noreferrer">
+//        https://docs.google.com/document/d/1inqMCG3sclhjJdvcv6JamtF6awbrJH3HxLTgbcfDhYU/edit?tab=t.0
+//      </a>`
+//   )
+//   .style("margin", "16px 0 40px")
+//   .style("font-size", "12px");
