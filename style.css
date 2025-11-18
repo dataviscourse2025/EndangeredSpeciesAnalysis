@@ -95,13 +95,10 @@ h1 {
 }
 
 .esa-marker {
-  transition: transform 0.15s ease;
+  transition: fill 0.15s ease, stroke-width 0.15s ease;
 }
 
 .esa-marker:hover {
-  transform: scale(1.2);
-}
-
-.esa-tooltip {
-  z-index: 10;
+  fill: #444;
+  stroke-width: 2px;
 }
