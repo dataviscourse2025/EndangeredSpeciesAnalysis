@@ -81,7 +81,7 @@ function renderStackedArea() {
         date: new Date(2004, 0, 1),
         title: "2004 Amendments",
         text: [
-            "Department of Defense exempt from critical habitat if it has an approved natural resources management plan."
+            "Department of Defense is exempt from critical habitat restrictions if it has an approved natural resources management plan."
         ]
       }
     ];
