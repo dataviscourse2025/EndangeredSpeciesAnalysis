@@ -1,8 +1,8 @@
 State,Endangered (Total) 2019
 Hawaii,373
 California,183
-Florida,106
-Texas,72
+Florida,136
+Texas,112
 Alabama,53
 Arizona,41
 New Mexico,34
@@ -11,8 +11,8 @@ North Carolina,24
 Tennessee,21
 South Carolina,18
 Louisiana,16
-Washington,15
-Oregon,13
+Washington,25
+Oregon,23
 Mississippi,12
 Virginia,11
 Kentucky,10
@@ -45,7 +45,7 @@ Utah,42
 Idaho,25
 Montana,37
 Wyoming,13
-Alaska,67
+Alaska,15
 Maryland,0
 Delaware,0
 Nevada,0
