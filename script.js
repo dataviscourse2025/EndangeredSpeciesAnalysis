@@ -3,12 +3,25 @@
 /**
  * Creates a stacked area chart of endangered animal species (by class).
  * Loads the CSV, parses dates, coerces counts to numbers, filters invalid rows,
- * then draws the SVG with axes, labels, and legend.
+ * then draws the SVG with axes, labels, a legend, and ESA amendment markers.
  */
 function renderStackedArea() {
   d3.csv("data/endangered_species.csv").then(data => {
     const container = d3.select("#chart");
     container.html("");
+
+    // ESA clickable markers
+    const esaTooltip = container.append("div")
+      .attr("class", "esa-tooltip")
+      .style("position", "absolute")
+      .style("background", "white")
+      .style("border", "1px solid #ccc")
+      .style("border-radius", "4px")
+      .style("padding", "8px 10px")
+      .style("box-shadow", "0 2px 6px rgba(0,0,0,0.15)")
+      .style("font-size", "11px")
+      .style("pointer-events", "none")
+      .style("opacity", 0);
 
     //Title
     container.append("h2")
@@ -28,6 +41,50 @@ function renderStackedArea() {
           Endangered Species Act Amendments
         </a>`
       );
+
+    const amendmentData = [  
+      {
+          year: 1978,
+          date: new Date(1978, 0, 1),
+          title: "1978 Amendments",
+          text: [
+            "Created a federal committee that can approve actions harming a species.",
+            "Allowed economic factors in habitat decisions.",
+            "Added Agriculture to federal conservation planning.",
+            "Limited protected populations to vertebrates."
+          ]
+      },
+      {
+        year: 1982,
+        date: new Date(1982, 0, 1),
+        title: "1982 Amendments",
+        text: [
+            "Listing decisions must be based only on science, not economics.",
+            "Final listing decisions required in 1 year.",
+            "Allowed experimental populations and Habitat Conservation Plans.",
+            "Added endangered plant protections."
+        ]
+      },
+      {
+        year: 1988,
+        date: new Date(1988, 0, 1),
+        title: "1988 Amendments",
+        text: [
+            "Required monitoring of candidate and recovered species.",
+            "Strengthened recovery plans and 5-year post-delisting monitoring.",
+            "Required reports on recovery progress and spending.",
+            "Expanded plant protections."
+        ]
+      },
+      {
+        year: 2004,
+        date: new Date(2004, 0, 1),
+        title: "2004 Amendments",
+        text: [
+            "Department of Defense exempt from critical habitat if it has an approved natural resources management plan."
+        ]
+      }
+    ];
 
     // Parse the date and create the stacked area chart, while removing null rows
     const parseDate = d3.timeParse("%-d %b %y");
@@ -166,6 +223,46 @@ function renderStackedArea() {
       .attr("text-anchor", "middle")
       .style("font-size", "12px")
       .text("Number of Species");
+    
+    // ESA markers
+    const markerY = 10; // a little below the top of the chart area
+
+    const markersGroup = svg.append("g")
+      .attr("class", "esa-markers");
+
+    markersGroup.selectAll("circle.esa-marker")
+      .data(amendmentData)
+      .join("circle")
+      .attr("class", "esa-marker")
+      .attr("cx", d => x(d.date))
+      .attr("cy", markerY)
+      .attr("r", 6)
+      .attr("fill", "black")
+      .attr("stroke", "white")
+      .attr("stroke-width", 1.5)
+      .style("cursor", "pointer")
+      .on("click", (event, d) => {
+        // prevent the document click handler from immediately hiding it
+        event.stopPropagation();
+
+        const html = `
+          <strong>${d.title}</strong>
+          <ul style="margin:4px 0 0 16px; padding:0;">
+            ${d.text.map(t => `<li>${t}</li>`).join("")}
+          </ul>
+        `;
+
+        esaTooltip
+          .html(html)
+          .style("left", (event.pageX + 10) + "px")
+          .style("top", (event.pageY + 10) + "px")
+          .style("opacity", 1);
+      });
+
+    // Click anywhere else to hide the tooltip
+    d3.select(document).on("click.esa-tooltip", () => {
+      esaTooltip.style("opacity", 0);
+    });
 
     // Error handling
   }).catch(error => {

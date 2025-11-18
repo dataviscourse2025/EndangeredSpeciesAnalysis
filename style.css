@@ -93,3 +93,15 @@ h1 {
   fill: #333;
   margin-left: 4px;
 }
+
+.esa-marker {
+  transition: transform 0.15s ease;
+}
+
+.esa-marker:hover {
+  transform: scale(1.2);
+}
+
+.esa-tooltip {
+  z-index: 10;
+}
