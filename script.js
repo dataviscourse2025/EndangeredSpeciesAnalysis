@@ -267,7 +267,14 @@ function renderStackedArea() {
       });
 
     // Click anywhere else to hide the tooltip
-    d3.select(document).on("click.esa-tooltip", () => {
+    d3.select(document).on("click.esa-tooltip", (event) => {
+      const target = event.target;    
+      if (
+        (target.classList && target.classList.contains("esa-marker")) ||
+        (target.closest && target.closest(".esa-tooltip"))
+      ) {
+        return;
+      }    
       esaTooltip.style("opacity", 0);
     });
 
