@@ -258,6 +258,15 @@ function renderStackedArea() {
       .on("click", (event, d) => {
         // prevent the document click handler from immediately hiding it
         event.stopPropagation();
+        
+        const html = `
+        <div style="font-weight:700; margin-bottom:6px;">
+          ${d.title}
+        </div>
+        <ul style="margin:0 0 0 18px; padding:0; font-size:14px; line-height:1.3;">
+          ${d.text.map(t => `<li>${t}</li>`).join("")}
+        </ul>
+        `;
 
         esaTooltip
           .html(html)
@@ -493,7 +502,7 @@ function renderUSMap() {
         d3.select(this).attr("stroke", "#fff").attr("stroke-width", 1);
       });
 
-    // 6) Legend
+    // Legend
     const legendWidth = 200;
     const legendHeight = 10;
 
