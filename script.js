@@ -245,6 +245,19 @@ function renderStackedArea() {
         // prevent the document click handler from immediately hiding it
         event.stopPropagation();
 
+      markersGroup.selectAll("line.esa-line")
+        .data(amendmentData)
+        .join("line")
+        .attr("class", "esa-line")
+        .attr("x1", d => x(d.date))
+        .attr("x2", d => x(d.date))
+        .attr("y1", markerY + 6)       // start just below the circle
+        .attr("y2", height)            // go all the way to x-axis
+        .attr("stroke", "black")
+        .attr("stroke-width", 1)
+        .attr("stroke-dasharray", "3,3")
+        .attr("opacity", 0.5);
+
         const html = `
           <strong>${d.title}</strong>
           <ul style="margin:4px 0 0 16px; padding:0;">
