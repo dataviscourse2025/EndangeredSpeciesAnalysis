@@ -284,93 +284,117 @@ function renderHistogram5yr() {
 }
 
 function renderUSMap() {
+  const container = d3.select("#chart-map");
+  container.html("");
+
+  // Title
+  container.append("h2")
+    .attr("class", "chart-title")
+    .text("US Endangered Species by State (2019)");
+
   const width = 960;
   const height = 600;
 
-  const svg = d3.select("#map")
-    .append("svg")
+  const svg = container.append("svg")
     .attr("width", width)
     .attr("height", height);
 
+  const tooltip = container.append("div")
+    .attr("id", "tooltip")
+    .attr("class", "tooltip")
+    .style("opacity", 0)
+    .style("position", "absolute")
+    .style("background", "rgba(0,0,0,0.8)")
+    .style("color", "white")
+    .style("padding", "5px 10px")
+    .style("border-radius", "4px")
+    .style("pointer-events", "none")
+    .style("font-size", "12px");
+
   const projection = d3.geoAlbersUsa()
     .translate([width / 2, height / 2])
-    .scale(1000);
+    .scale(1200);
 
   const path = d3.geoPath().projection(projection);
 
   Promise.all([
-    d3.json("us.json"),                 // topojson for US states
-    d3.csv("data.csv", d => ({
-      state: d.state,
-      value: +d.value
-    }))
-  ])
-  .then(([us, data]) => {
-    console.log("Loaded us.json and data.csv", us, data); // sanity check
+    d3.json("https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json"),
+    d3.csv("data/endangered_by_state_2019.csv")
+  ]).then(([us, csvData]) => {
+    const normalize = str => str.trim().toLowerCase();
 
-    const dataByState = new Map(
-      data.map(d => [d.state.toLowerCase(), d.value])
-    );
+    const data = {};
+    let maxVal = 0;
 
-    const maxVal = d3.max(data, d => d.value);
-
-    // Normal color scale (for non-zero values)
-    const color = d3.scaleSequential(d3.interpolateYlOrRd)
-      .domain([0, maxVal]);
-
-    // Legend color helper: smooth fade from white → normal scale
-    const legendColor = t => {
-      if (t === 0) return "#ffffff";   
-
-      const blendEnd = 0.1;            
-
-      if (t < blendEnd) {
-        const w = t / blendEnd;       
-        const target = color(t * maxVal);
-        return d3.interpolateRgb("#ffffff", target)(w);
+    csvData.forEach(d => {
+      const key = normalize(d.State); 
+      const val = +d["Endangered (Total) 2019"];
+      if (!isNaN(val)) {
+        data[key] = val;
+        if (val > maxVal) maxVal = val;
       }
+    });
 
-      return color(t * maxVal);
-    };
+    const color = d3.scaleLinear().domain([0, 250, maxVal]).range(["#ffbab3", "#b30000", "#2b0000"]);
 
-    // Convert topojson → geojson
-    const states = topojson.feature(us, us.objects.states);
+    const allStates = topojson.feature(us, us.objects.states).features;
 
-    // Draw states
+    const usableStates = allStates.filter(f => {
+      const key = normalize(f.properties.name || f.id);
+      const hasData = Object.prototype.hasOwnProperty.call(data, key);
+  
+      return hasData;
+    });
+
     svg.append("g")
       .selectAll("path")
-      .data(states.features)
+      .data(usableStates)
       .join("path")
+      .attr("class", "state")
       .attr("d", path)
       .attr("fill", d => {
-        const key = d.properties.name.toLowerCase();
-        const v = dataByState.get(key);
-
-        if (v == null) return "#eeeeee";  // no data
-        if (v === 0) return "#ffffff";    // explicitly white for 0
-        return color(v);
+        const key = normalize(d.properties.name || d.id);
+        return color(data[key]);  // guaranteed to exist because of filter
       })
-      .attr("stroke", "#999")
-      .attr("stroke-width", 0.5);
+      .attr("stroke", "#fff")
+      .attr("stroke-width", 1)
+      .on("mouseover", function (event, d) {
+        const key = normalize(d.properties.name || d.id);
+        const stateName = d.properties.name || d.id;
+        const value = data[key];
 
-    //Legend with white color fade
+        tooltip.transition().duration(100).style("opacity", 1);
+        tooltip.html(
+          `<strong>${stateName}</strong><br/>Endangered: ${value}`
+        )
+          .style("left", (event.pageX + 10) + "px")
+          .style("top", (event.pageY + 10) + "px");
+
+        d3.select(this).attr("stroke", "#000").attr("stroke-width", 2);
+      })
+      .on("mousemove", function (event) {
+        tooltip
+          .style("left", (event.pageX + 10) + "px")
+          .style("top", (event.pageY + 10) + "px");
+      })
+      .on("mouseout", function () {
+        tooltip.transition().duration(100).style("opacity", 0);
+        d3.select(this).attr("stroke", "#fff").attr("stroke-width", 1);
+      });
+
+    // 6) Legend
     const legendWidth = 200;
     const legendHeight = 10;
 
     const defs = svg.append("defs");
     const linearGradient = defs.append("linearGradient")
-      .attr("id", "legend-gradient")
-      .attr("x1", "0%")
-      .attr("x2", "100%")
-      .attr("y1", "0%")
-      .attr("y2", "0%");
+      .attr("id", "legend-gradient");
 
-    linearGradient
-      .selectAll("stop")
-      .data(d3.range(0, 1.01, 0.01)) // t from 0 to 1
+    linearGradient.selectAll("stop")
+      .data(d3.range(0, 1.01, 0.01))
       .join("stop")
       .attr("offset", d => `${d * 100}%`)
-      .attr("stop-color", d => legendColor(d));
+      .attr("stop-color", d => color(d * maxVal));
 
     svg.append("rect")
       .attr("x", width - legendWidth - 20)
@@ -392,13 +416,15 @@ function renderUSMap() {
       .attr("y", height - 35)
       .style("font-size", "12px")
       .attr("text-anchor", "end")
-      .style("font-size", "12px")
       .text("High");
-  })
-  .catch(error => {
-    console.error("Error loading map or data:", error);
-  });
+
+  }).catch(error =>
+    console.error("Error loading map or data:", error)
+  );
 }
+
+
+
 
 
 // Render charts
