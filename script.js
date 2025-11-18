@@ -71,7 +71,7 @@ function renderStackedArea() {
         title: "1988 Amendments",
         text: [
             "Required monitoring of candidate and recovered species.",
-            "Strengthened recovery plans and 5-year post-delisting monitoring.",
+            "Strengthened recovery plans and 5-year monitoring of species after being removed from the list.",
             "Required reports on recovery progress and spending.",
             "Expanded plant protections."
         ]
