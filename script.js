@@ -306,6 +306,8 @@ function renderUSMap() {
     }))
   ])
   .then(([us, data]) => {
+    console.log("Loaded us.json and data.csv", us, data); // sanity check
+
     const dataByState = new Map(
       data.map(d => [d.state.toLowerCase(), d.value])
     );
@@ -316,25 +318,25 @@ function renderUSMap() {
     const color = d3.scaleSequential(d3.interpolateYlOrRd)
       .domain([0, maxVal]);
 
-    // Helper: legend color with smooth fade from white at 0
+    // Legend color helper: smooth fade from white → normal scale
     const legendColor = t => {
-      // t in [0, 1] for legend
-      if (t === 0) return "#ffffff";
+      if (t === 0) return "#ffffff";   
 
-      const blendEnd = 0.1; // first 10% of legend is white→scale fade
+      const blendEnd = 0.1;            
 
       if (t < blendEnd) {
-        const w = t / blendEnd;                  // 0 → 1 in fade region
-        const target = color(t * maxVal);        // what the scale would be
+        const w = t / blendEnd;       
+        const target = color(t * maxVal);
         return d3.interpolateRgb("#ffffff", target)(w);
       }
 
       return color(t * maxVal);
     };
 
-    // Draw states
+    // Convert topojson → geojson
     const states = topojson.feature(us, us.objects.states);
 
+    // Draw states
     svg.append("g")
       .selectAll("path")
       .data(states.features)
@@ -351,7 +353,7 @@ function renderUSMap() {
       .attr("stroke", "#999")
       .attr("stroke-width", 0.5);
 
-    // === Legend with white → color fade ===
+    //Legend with white color fade
     const legendWidth = 200;
     const legendHeight = 10;
 
@@ -363,13 +365,12 @@ function renderUSMap() {
       .attr("y1", "0%")
       .attr("y2", "0%");
 
-    // THIS is the part that changed:
     linearGradient
       .selectAll("stop")
       .data(d3.range(0, 1.01, 0.01)) // t from 0 to 1
       .join("stop")
       .attr("offset", d => `${d * 100}%`)
-      .attr("stop-color", d => legendColor(d)); // instead of color(d * maxVal)
+      .attr("stop-color", d => legendColor(d));
 
     svg.append("rect")
       .attr("x", width - legendWidth - 20)
@@ -391,16 +392,13 @@ function renderUSMap() {
       .attr("y", height - 35)
       .style("font-size", "12px")
       .attr("text-anchor", "end")
+      .style("font-size", "12px")
       .text("High");
   })
-  .catch(error =>
-    console.error("Error loading map or data:", error)
-  );
+  .catch(error => {
+    console.error("Error loading map or data:", error);
+  });
 }
-
-
-
-
 
 
 // Render charts
