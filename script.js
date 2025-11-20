@@ -23,19 +23,6 @@ function renderStackedArea() {
       .style("pointer-events", "none")
       .style("opacity", 0);
 
-    // Hover tooltip for stacked area
-    const areaTooltip = container.append("div")
-      .attr("class", "area-tooltip")
-      .style("position", "absolute")
-      .style("background", "white")
-      .style("border", "1px solid #ccc")
-      .style("border-radius", "4px")
-      .style("padding", "6px 8px")
-      .style("box-shadow", "0 2px 6px rgba(0,0,0,0.15)")
-      .style("font-size", "12px")
-      .style("pointer-events", "none")
-      .style("opacity", 0);
-
     // Title
     container.append("h2")
       .attr("class", "chart-title")
