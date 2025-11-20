@@ -381,24 +381,23 @@ function renderStackedArea() {
       updateWindow(startYear);
     });
 
-    // play/pause behavior
     function startPlaying() {
       if (isPlaying) return;
       isPlaying = true;
-    
+
       playButton
         .text(" Play")
         .classed("is-playing", true);
-    
+
       playInterval = d3.interval(() => {
         let current = +slider.property("value");
-    
+
         if (current >= maxYear - windowSize + 1) {
           current = minYear;
         } else {
-          current += 1; 
+          current += 1;
         }
-    
+
         slider.property("value", current);
         updateWindow(current);
       }, 800);
@@ -406,17 +405,16 @@ function renderStackedArea() {
 
     function stopPlaying() {
       isPlaying = false;
-    
+
       playButton
         .text(" Play")
         .classed("is-playing", false);
-    
+
       if (playInterval) {
         playInterval.stop();
         playInterval = null;
       }
     }
-    
 
     playButton.on("click", () => {
       if (isPlaying) {
@@ -426,23 +424,6 @@ function renderStackedArea() {
       }
     });
 
-        areaTooltip
-          .html(html)
-          .style("left", (event.pageX + 12) + "px")
-          .style("top", (event.pageY - 10) + "px")
-          .style("opacity", 1);
-
-        hoverLine
-          .attr("x1", x(d.date))
-          .attr("x2", x(d.date))
-          .style("opacity", 1);
-      })
-      .on("mouseleave", () => {
-        areaTooltip.style("opacity", 0);
-        hoverLine.style("opacity", 0);
-      });
-
-    // Legend Hover Highlight
     legendItems
       .on("mouseenter", (event, key) => {
         layersGroup.selectAll("path.layer")
@@ -463,7 +444,6 @@ function renderStackedArea() {
           .style("opacity", 1);
       });
 
-    // initial window
     updateWindow(minYear);
 
   }).catch(error => {
