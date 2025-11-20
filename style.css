@@ -102,3 +102,43 @@ h1 {
   fill: #444;
   stroke-width: 2px;
 }
+
+/* Slider controls for stacked area */
+.slider-controls {
+  width: 90%;
+  max-width: 1000px;
+  margin: 0 auto 10px auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+}
+
+.slider-controls label {
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.slider-controls input[type="range"] {
+  flex: 1;
+}
+
+.slider-value {
+  min-width: 90px;
+  text-align: right;
+  font-weight: 600;
+}
+
+/* Play & pause button */
+.play-button {
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background: #f7f7f7;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.play-button:hover {
+  background: #ececec;
+}
