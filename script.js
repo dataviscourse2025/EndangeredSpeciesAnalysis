@@ -328,13 +328,6 @@ function renderStackedArea() {
     let currentWindowData = [];
     const bisectDate = d3.bisector(d => d.date).left;
 
-    const hoverRect = svg.append("rect")
-      .attr("class", "hover-rect")
-      .attr("width", width)
-      .attr("height", height)
-      .attr("fill", "none")
-      .attr("pointer-events", "all");
-
     function updateWindow(startYear) {
       const endYear = startYear + windowSize - 1;
       sliderValue.text(`${startYear}–${endYear}`);
