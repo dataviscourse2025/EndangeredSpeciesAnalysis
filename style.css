@@ -279,3 +279,7 @@ body {
 svg text {
   font-family: "Lato", sans-serif;
 }
+
+#chart, #chart-hist, #chart-map {
+  margin-bottom: 80px;
+}
