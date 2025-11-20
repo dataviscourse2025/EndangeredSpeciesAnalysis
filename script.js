@@ -355,7 +355,7 @@ function renderStackedArea() {
 
       // gridline + axis styling
       yAxisGroup.selectAll("line")
-        .attr("stroke", "##cbd5e1")
+        .attr("stroke", "#e5e7eb")
         .attr("stroke-opacity", 0.9);
       yAxisGroup.selectAll(".domain")
         .attr("stroke", "#9ca3af");
