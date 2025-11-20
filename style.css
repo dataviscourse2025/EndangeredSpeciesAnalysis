@@ -146,12 +146,10 @@ h1 {
   flex: 1;
   height: 6px;
   border-radius: 999px;
-  background: linear-gradient(90deg, #1f77b4, #ff7f0e, #e377c2);
   outline: none;
   cursor: pointer;
 }
 
-/* WebKit thumb (Chrome/Safari) */
 .slider-controls input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
