@@ -236,3 +236,26 @@ body {
   margin: 0;
   padding: 0;
 }
+
+/* Title + subtitle background block */
+.page-header h1,
+.page-header .byline {
+  display: inline-block;
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 8px;
+  backdrop-filter: blur(4px);
+}
+
+.page-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+#charts-footer {
+  display: inline-block;
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 8px;
+  backdrop-filter: blur(4px);
+}
