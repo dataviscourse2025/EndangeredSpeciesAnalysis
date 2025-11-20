@@ -311,17 +311,6 @@ function renderStackedArea() {
       esaTooltip.style("opacity", 0);
     });
 
-    // Hover elements
-    let currentWindowData = [];
-    const bisectDate = d3.bisector(d => d.date).left;
-
-    const hoverRect = svg.append("rect")
-      .attr("class", "hover-rect")
-      .attr("width", width)
-      .attr("height", height)
-      .attr("fill", "none")
-      .attr("pointer-events", "all");
-
     function updateWindow(startYear) {
       const endYear = startYear + windowSize - 1;
       sliderValue.text(`${startYear}–${endYear}`);
@@ -436,43 +425,6 @@ function renderStackedArea() {
         startPlaying();
       }
     });
-
-    // Hover tooltip behavior
-    hoverRect
-      .on("mousemove", (event) => {
-        if (!currentWindowData.length) return;
-
-        const [mx] = d3.pointer(event, hoverRect.node());
-        const date = x.invert(mx);
-
-        let i = bisectDate(currentWindowData, date);
-        if (i <= 0) i = 0;
-        else if (i >= currentWindowData.length) i = currentWindowData.length - 1;
-
-        const d = currentWindowData[i];
-
-        const year = d.date.getFullYear();
-        const totals = keys.map(k => ({ key: k, value: d[k] }));
-        const totalAll = d3.sum(totals, t => t.value);
-
-        const top = totals
-          .slice()
-          .sort((a, b) => b.value - a.value)
-          .slice(0, 3);
-
-        const html = `
-          <div style="font-weight:600;margin-bottom:4px;">${year}</div>
-          <div>Total endangered: <strong>${totalAll}</strong></div>
-          <div style="margin-top:4px;">Top classes:</div>
-          <ul style="margin:0 0 0 14px;padding:0;">
-            ${top.map(t => `
-              <li>${t.key
-                .replace(/^endangered_/, "")
-                .replace(/_/g, " ")
-                .replace(/\b\w/g, l => l.toUpperCase())
-              }: ${t.value}</li>`).join("")}
-          </ul>
-        `;
 
         areaTooltip
           .html(html)
