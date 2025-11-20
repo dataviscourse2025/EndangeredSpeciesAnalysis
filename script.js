@@ -23,6 +23,19 @@ function renderStackedArea() {
       .style("pointer-events", "none")
       .style("opacity", 0);
 
+    // HOVER tooltip for stacked area
+    const areaTooltip = container.append("div")
+      .attr("class", "area-tooltip")
+      .style("position", "absolute")
+      .style("background", "white")
+      .style("border", "1px solid #ccc")
+      .style("border-radius", "4px")
+      .style("padding", "6px 8px")
+      .style("box-shadow", "0 2px 6px rgba(0,0,0,0.15)")
+      .style("font-size", "12px")
+      .style("pointer-events", "none")
+      .style("opacity", 0);
+
     // Title
     container.append("h2")
       .attr("class", "chart-title")
@@ -225,11 +238,20 @@ function renderStackedArea() {
     const legendX = width + 20;
     const legendY = (height - legendHeight) / 2;
 
+    // small legend title
+    legend.append("text")
+      .attr("x", legendX + 10)
+      .attr("y", legendY - 12)
+      .style("font-size", "11px")
+      .style("font-weight", "600")
+      .text("Endangered class");
+
     const legendItems = legend.selectAll(".legend-item")
       .data(keys)
       .join("g")
       .attr("class", "legend-item")
-      .attr("transform", (d, i) => `translate(${legendX}, ${legendY + i * 22})`);
+      .attr("transform", (d, i) => `translate(${legendX}, ${legendY + i * 22})`)
+      .style("cursor", "pointer");
 
     legendItems.append("rect")
       .attr("width", 15)
@@ -302,6 +324,26 @@ function renderStackedArea() {
       esaTooltip.style("opacity", 0);
     });
 
+    // hover elements
+    let currentWindowData = [];
+    const bisectDate = d3.bisector(d => d.date).left;
+
+    const hoverLine = svg.append("line")
+      .attr("class", "hover-line")
+      .attr("y1", 0)
+      .attr("y2", height)
+      .attr("stroke", "#4b5563")
+      .attr("stroke-width", 1)
+      .attr("stroke-dasharray", "3,3")
+      .style("opacity", 0);
+
+    const hoverRect = svg.append("rect")
+      .attr("class", "hover-rect")
+      .attr("width", width)
+      .attr("height", height)
+      .attr("fill", "none")
+      .attr("pointer-events", "all");
+
     function updateWindow(startYear) {
       const endYear = startYear + windowSize - 1;
       sliderValue.text(`${startYear}–${endYear}`);
@@ -311,6 +353,7 @@ function renderStackedArea() {
 
       const windowData = fullData.filter(d => d.date >= startDate && d.date <= endDate);
       if (!windowData.length) return;
+      currentWindowData = windowData;
 
       const layers = stack(windowData);
 
@@ -332,20 +375,29 @@ function renderStackedArea() {
       const xAxis = d3.axisBottom(x)
         .ticks(d3.timeYear.every(1))
         .tickFormat(d3.timeFormat("%Y"));
-      const yAxis = d3.axisLeft(y).ticks(5);
+
+      // y-axis with subtle gridlines
+      const yAxis = d3.axisLeft(y)
+        .ticks(5)
+        .tickSize(-width)
+        .tickSizeOuter(0);
 
       xAxisGroup.transition().duration(400).call(xAxis)
         .selectAll("text")
         .style("font-size", "11px");
 
-      yAxisGroup.transition().duration(400).call(yAxis)
-        .selectAll("path, line")
-        .attr("stroke", "black");
+      yAxisGroup.transition().duration(400).call(yAxis);
 
-      xAxisGroup.selectAll("path, line")
+      // gridline + axis styling
+      yAxisGroup.selectAll("line")
+        .attr("stroke", "#e5e7eb")
+        .attr("stroke-opacity", 0.9);
+      yAxisGroup.selectAll(".domain")
         .attr("stroke", "#9ca3af");
 
-      yAxisGroup.selectAll("path, line")
+      xAxisGroup.selectAll("path")
+        .attr("stroke", "#9ca3af");
+      xAxisGroup.selectAll("line")
         .attr("stroke", "#9ca3af");
 
       // Re-position ESA markers 
@@ -406,6 +458,80 @@ function renderStackedArea() {
         startPlaying();
       }
     });
+
+    // Hover tooltip behavior
+    hoverRect
+      .on("mousemove", (event) => {
+        if (!currentWindowData.length) return;
+
+        const [mx] = d3.pointer(event, hoverRect.node());
+        const date = x.invert(mx);
+
+        let i = bisectDate(currentWindowData, date);
+        if (i <= 0) i = 0;
+        else if (i >= currentWindowData.length) i = currentWindowData.length - 1;
+
+        const d = currentWindowData[i];
+
+        const year = d.date.getFullYear();
+        const totals = keys.map(k => ({ key: k, value: d[k] }));
+        const totalAll = d3.sum(totals, t => t.value);
+
+        const top = totals
+          .slice()
+          .sort((a, b) => b.value - a.value)
+          .slice(0, 3);
+
+        const html = `
+          <div style="font-weight:600;margin-bottom:4px;">${year}</div>
+          <div>Total endangered: <strong>${totalAll}</strong></div>
+          <div style="margin-top:4px;">Top classes:</div>
+          <ul style="margin:0 0 0 14px;padding:0;">
+            ${top.map(t => `
+              <li>${t.key
+                .replace(/^endangered_/, "")
+                .replace(/_/g, " ")
+                .replace(/\b\w/g, l => l.toUpperCase())
+              }: ${t.value}</li>`).join("")}
+          </ul>
+        `;
+
+        areaTooltip
+          .html(html)
+          .style("left", (event.pageX + 12) + "px")
+          .style("top", (event.pageY - 10) + "px")
+          .style("opacity", 1);
+
+        hoverLine
+          .attr("x1", x(d.date))
+          .attr("x2", x(d.date))
+          .style("opacity", 1);
+      })
+      .on("mouseleave", () => {
+        areaTooltip.style("opacity", 0);
+        hoverLine.style("opacity", 0);
+      });
+
+    // Legend Hover Highlight
+    legendItems
+      .on("mouseenter", (event, key) => {
+        layersGroup.selectAll("path.layer")
+          .transition().duration(150)
+          .attr("opacity", d => d.key === key ? 1 : 0.15);
+
+        legendItems.selectAll("text")
+          .transition().duration(150)
+          .style("opacity", d => d === key ? 1 : 0.5);
+      })
+      .on("mouseleave", () => {
+        layersGroup.selectAll("path.layer")
+          .transition().duration(150)
+          .attr("opacity", 1);
+
+        legendItems.selectAll("text")
+          .transition().duration(150)
+          .style("opacity", 1);
+      });
 
     // initial window
     updateWindow(minYear);
