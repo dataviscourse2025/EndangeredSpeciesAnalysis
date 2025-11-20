@@ -96,21 +96,21 @@ function renderStackedArea() {
     });
     data = data.filter(d => d.date !== null);
 
-    const fullData = data; // keep full dataset for moving window
+    const fullData = data; 
 
-    // --- Compute year range for slider ---
+    // Compute year range for slider
     const minDate = d3.min(fullData, d => d.date);
     const maxDate = d3.max(fullData, d => d.date);
     const minYear = minDate.getFullYear();
     const maxYear = maxDate.getFullYear();
-    const windowSize = 10; // years in the visible window
+    const windowSize = 10; 
 
-    // --- Slider UI (inside chart card, above the SVG) ---
+    // Slider UI 
     const sliderControls = container.append("div")
       .attr("class", "slider-controls");
 
     sliderControls.append("label")
-      .text("View 10-year window starting in:");
+      .text("Adjust 10-year window:");
 
     const slider = sliderControls.append("input")
       .attr("type", "range")
@@ -122,7 +122,7 @@ function renderStackedArea() {
     const sliderValue = sliderControls.append("span")
       .attr("class", "slider-value");
 
-    // --- Chart dimensions ---
+    // Chart dimensions
     const margin = { top: 20, right: 160, bottom: 60, left: 70 };
     const chartElement = document.getElementById('chart');
     const containerWidth = chartElement.clientWidth || 800;
