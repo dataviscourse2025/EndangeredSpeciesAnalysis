@@ -23,7 +23,7 @@ function renderStackedArea() {
       .style("pointer-events", "none")
       .style("opacity", 0);
 
-    // HOVER tooltip for stacked area
+    // Hover tooltip for stacked area
     const areaTooltip = container.append("div")
       .attr("class", "area-tooltip")
       .style("position", "absolute")
@@ -117,7 +117,7 @@ function renderStackedArea() {
     const maxDate = d3.max(fullData, d => d.date);
     const minYear = minDate.getFullYear();
     const maxYear = maxDate.getFullYear();
-    const windowSize = 10; // years visible at a time
+    const windowSize = 10; 
 
     // Chart dims
     const margin = { top: 20, right: 160, bottom: 60, left: 70 };
@@ -324,18 +324,9 @@ function renderStackedArea() {
       esaTooltip.style("opacity", 0);
     });
 
-    // hover elements
+    // Hover elements
     let currentWindowData = [];
     const bisectDate = d3.bisector(d => d.date).left;
-
-    const hoverLine = svg.append("line")
-      .attr("class", "hover-line")
-      .attr("y1", 0)
-      .attr("y2", height)
-      .attr("stroke", "#4b5563")
-      .attr("stroke-width", 1)
-      .attr("stroke-dasharray", "3,3")
-      .style("opacity", 0);
 
     const hoverRect = svg.append("rect")
       .attr("class", "hover-rect")
