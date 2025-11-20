@@ -10,7 +10,7 @@ function renderStackedArea() {
     const container = d3.select("#chart");
     container.html("");
 
-    // ESA clickable markers
+    // ESA clickable tooltip 
     const esaTooltip = container.append("div")
       .attr("class", "esa-tooltip")
       .style("position", "absolute")
@@ -35,13 +35,14 @@ function renderStackedArea() {
       .html(
         `Sources: 
         <a href="https://www.kaggle.com/datasets/chirayurijal/worldwildlifespeciesdata" target="_blank" rel="noopener noreferrer">
-          Wildlife Species Data
+          World Wildlife Species Data
         </a> • 
         <a href="https://www.fws.gov/page/endangered-species-act-amendments" target="_blank" rel="noopener noreferrer">
           Endangered Species Act Amendments
         </a>`
       );
 
+    // ESA annotations
     const amendmentData = [
       {
         year: 1978,
@@ -71,7 +72,7 @@ function renderStackedArea() {
         title: "1988 Amendments",
         text: [
           "Required monitoring of candidate and recovered species.",
-          "Strengthened recovery plans and 5-year monitoring of species after being removed from the list.",
+          "Strengthened recovery plans and 5-year monitoring after delisting.",
           "Required reports on recovery progress and spending.",
           "Expanded plant protections."
         ]
@@ -81,33 +82,33 @@ function renderStackedArea() {
         date: new Date(2004, 0, 1),
         title: "2004 Amendments",
         text: [
-          "Department of Defense is exempt from critical habitat restrictions if it has an approved natural resources management plan."
+          "Department of Defense is exempt from some critical habitat restrictions if it has an approved natural resources management plan."
         ]
       }
     ];
 
-    // Parse the date + convert counts to numbers
+    // Parse dates 
     const parseDate = d3.timeParse("%-d %b %y");
-    data.forEach((d) => {
+    data.forEach(d => {
       d.date = parseDate(d.date);
       for (let key in d) {
         if (key !== "date") d[key] = +d[key] || 0;
       }
     });
-    data = data.filter(d => d.date !== null);
+    data = data.filter(d => d.date != null);
 
-    const fullData = data; 
+    const fullData = data;
 
-    // Compute year range for slider
+    // Year range and window
     const minDate = d3.min(fullData, d => d.date);
     const maxDate = d3.max(fullData, d => d.date);
     const minYear = minDate.getFullYear();
     const maxYear = maxDate.getFullYear();
-    const windowSize = 10; 
-    
-    // Chart dimensions
+    const windowSize = 10; // years visible at a time
+
+    // Chart dims
     const margin = { top: 20, right: 160, bottom: 60, left: 70 };
-    const chartElement = document.getElementById('chart');
+    const chartElement = document.getElementById("chart");
     const containerWidth = chartElement.clientWidth || 800;
     const width = containerWidth - margin.left - margin.right;
     const height = 400 - margin.top - margin.bottom;
@@ -120,24 +121,32 @@ function renderStackedArea() {
       .append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
 
-    // Slider UI
-    const sliderControls = container.append("div")
+    // Slider and play controls
+    const controls = container.append("div")
       .attr("class", "slider-controls");
 
-    sliderControls.append("label")
-      .text("Adjust 10-year window:");
+    controls.append("label")
+      .text("View 10-year window starting in:");
 
-    const slider = sliderControls.append("input")
+    const slider = controls.append("input")
       .attr("type", "range")
       .attr("min", minYear)
       .attr("max", maxYear - windowSize + 1)
       .attr("step", 1)
       .attr("value", minYear);
 
-    const sliderValue = sliderControls.append("span")
+    const sliderValue = controls.append("span")
       .attr("class", "slider-value");
 
-    // Keys and stack generator
+    const playButton = controls.append("button")
+      .attr("type", "button")
+      .attr("class", "play-button")
+      .text("▶ Play");
+
+    let isPlaying = false;
+    let playInterval = null;
+
+    // Data keys
     const keys = [
       "endangered_mammals",
       "endangered_birds",
@@ -160,17 +169,17 @@ function renderStackedArea() {
     const color = d3.scaleOrdinal()
       .domain(keys)
       .range([
-        "#1f77b4", // mammals
-        "#ff7f0e", // birds
-        "#2ca02c", // reptiles
-        "#d62728", // amphs
-        "#9467bd", // fish
-        "#8c564b", // snails
-        "#e377c2", // clams
-        "#7f7f7f", // crustaceans
-        "#bcbd22", // insects
-        "#17becf", // arachnids
-        "#a55194"  // coral
+        "#1f77b4",
+        "#ff7f0e",
+        "#2ca02c",
+        "#d62728",
+        "#9467bd",
+        "#8c564b",
+        "#e377c2",
+        "#7f7f7f",
+        "#bcbd22",
+        "#17becf",
+        "#a55194"
       ]);
 
     const area = d3.area()
@@ -183,10 +192,9 @@ function renderStackedArea() {
     // Axis groups
     const xAxisGroup = svg.append("g")
       .attr("transform", `translate(0,${height})`);
-
     const yAxisGroup = svg.append("g");
 
-    // y-axis & x-axis labels
+    // Axis labels
     svg.append("text")
       .attr("x", width / 2)
       .attr("y", height + 40)
@@ -202,7 +210,7 @@ function renderStackedArea() {
       .style("font-size", "12px")
       .text("Number of Species");
 
-    // Left border line
+    // Left border
     svg.append("line")
       .attr("x1", 0)
       .attr("x2", 0)
@@ -211,7 +219,7 @@ function renderStackedArea() {
       .attr("stroke", "black")
       .attr("stroke-width", 1);
 
-    // Legend (static – based on keys only)
+    // Legend
     const legend = svg.append("g").attr("class", "legend");
     const legendHeight = keys.length * 22;
     const legendX = width + 20;
@@ -237,55 +245,54 @@ function renderStackedArea() {
       .style("fill", "#333")
       .style("font-family", "Arial, sans-serif")
       .text(d => d
-        .replace(/^endangered_/, '')
-        .replace(/_/g, ' ')
+        .replace(/^endangered_/, "")
+        .replace(/_/g, " ")
         .replace(/\b\w/g, l => l.toUpperCase())
       );
 
-    // ESA markers group
+    // ESA markers 
     const markerY = 10;
     const markersGroup = svg.append("g")
       .attr("class", "esa-markers");
 
-      markersGroup.selectAll("line.esa-line")
-        .data(amendmentData)
-        .join("line")
-        .attr("class", "esa-line")
-        .attr("y1", markerY + 6)
-        .attr("y2", height)
-        .attr("stroke", "black")
-        .attr("stroke-width", 1)
-        .attr("stroke-dasharray", "3,3")
-        .attr("opacity", 0.4);
+    const markerLines = markersGroup.selectAll("line.esa-line")
+      .data(amendmentData)
+      .join("line")
+      .attr("class", "esa-line")
+      .attr("y1", markerY + 6)
+      .attr("y2", height)
+      .attr("stroke", "black")
+      .attr("stroke-width", 1)
+      .attr("stroke-dasharray", "3,3")
+      .attr("opacity", 0.4);
 
-      markersGroup.selectAll("circle.esa-marker")
-        .data(amendmentData)
-        .join("circle")
-        .attr("class", "esa-marker")
-        .attr("cy", markerY)
-        .attr("r", 6)
-        .attr("fill", "black")
-        .attr("stroke", "white")
-        .attr("stroke-width", 1.5)
-        .style("cursor", "pointer")
-        .on("click", (event, d) => {
+    const markerCircles = markersGroup.selectAll("circle.esa-marker")
+      .data(amendmentData)
+      .join("circle")
+      .attr("class", "esa-marker")
+      .attr("cy", markerY)
+      .attr("r", 6)
+      .attr("fill", "black")
+      .attr("stroke", "white")
+      .attr("stroke-width", 1.5)
+      .style("cursor", "pointer")
+      .on("click", (event, d) => {
         event.stopPropagation();
-          const html = `
+        const html = `
         <div style="font-weight:700; margin-bottom:6px;">
           ${d.title}
         </div>
         <ul style="margin:0 0 0 18px; padding:0; font-size:14px; line-height:1.3;">
           ${d.text.map(t => `<li>${t}</li>`).join("")}
-        </ul>
-        `;
-          esaTooltip
-            .html(html)
-            .style("left", (event.pageX + 10) + "px")
-            .style("top", (event.pageY + 10) + "px")
-            .style("opacity", 1);
+        </ul>`;
+        esaTooltip
+          .html(html)
+          .style("left", (event.pageX + 10) + "px")
+          .style("top", (event.pageY + 10) + "px")
+          .style("opacity", 1);
       });
 
-    // Click elsewhere hides ESA tooltip
+    // Hide tooltip when clicking elsewhere
     d3.select(document).on("click.esa-tooltip", (event) => {
       const target = event.target;
       if (
@@ -295,7 +302,6 @@ function renderStackedArea() {
       esaTooltip.style("opacity", 0);
     });
 
-    // Window update function
     function updateWindow(startYear) {
       const endYear = startYear + windowSize - 1;
       sliderValue.text(`${startYear}–${endYear}`);
@@ -304,14 +310,13 @@ function renderStackedArea() {
       const endDate = new Date(endYear, 11, 31);
 
       const windowData = fullData.filter(d => d.date >= startDate && d.date <= endDate);
-      if (windowData.length === 0) return;
+      if (!windowData.length) return;
 
       const layers = stack(windowData);
 
       x.domain(d3.extent(windowData, d => d.date));
       y.domain([0, d3.max(layers, layer => d3.max(layer, d => d[1]))]).nice();
 
-      // Update areas
       const paths = layersGroup.selectAll("path.layer")
         .data(layers, d => d.key);
 
@@ -324,11 +329,9 @@ function renderStackedArea() {
         exit => exit.remove()
       );
 
-      // Update axes 
       const xAxis = d3.axisBottom(x)
         .ticks(d3.timeYear.every(1))
         .tickFormat(d3.timeFormat("%Y"));
-
       const yAxis = d3.axisLeft(y).ticks(5);
 
       xAxisGroup.transition().duration(400).call(xAxis)
@@ -339,28 +342,63 @@ function renderStackedArea() {
         .selectAll("path, line")
         .attr("stroke", "black");
 
-      // Update ESA marker positions for current scale
-      markersGroup.selectAll("line.esa-line")
+      // Re-position ESA markers 
+      markerLines
         .attr("x1", d => x(d.date))
         .attr("x2", d => x(d.date));
 
-      markersGroup.selectAll("circle.esa-marker")
+      markerCircles
         .attr("cx", d => x(d.date));
     }
 
-    // Hook slider to updateWindow
     slider.on("input", (event) => {
       const startYear = +event.target.value;
       updateWindow(startYear);
     });
 
-    // Earliest 10-year window
+    // play/pause behavior
+    function startPlaying() {
+      if (isPlaying) return;
+      isPlaying = true;
+      playButton.text("❚❚ Pause");
+
+      playInterval = d3.interval(() => {
+        let current = +slider.property("value");
+        if (current >= maxYear - windowSize + 1) {
+          current = minYear; 
+        } else {
+          current += 1;
+        }
+        slider.property("value", current);
+        updateWindow(current);
+      }, 800);
+    }
+
+    function stopPlaying() {
+      isPlaying = false;
+      playButton.text("▶ Play");
+      if (playInterval) {
+        playInterval.stop();
+        playInterval = null;
+      }
+    }
+
+    playButton.on("click", () => {
+      if (isPlaying) {
+        stopPlaying();
+      } else {
+        startPlaying();
+      }
+    });
+
+    // initial window
     updateWindow(minYear);
 
   }).catch(error => {
     console.error("Error loading or processing data:", error);
   });
 }
+
 
 
 function renderHistogram5yr() {
