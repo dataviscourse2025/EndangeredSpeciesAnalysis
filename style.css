@@ -237,25 +237,36 @@ body {
   padding: 0;
 }
 
+/* Clean header block behind title + subtitle */
 .page-header {
   background: white;
-  padding: 22px 40px;
-  border-radius: 14px;
-  width: fit-content;
-  margin: 40px auto;
+  padding: 20px 0;
   text-align: center;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+  margin-bottom: 40px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.10);
 }
 
+/* Title */
 .page-header h1 {
   margin: 0;
   font-size: 28px;
   color: #111;
-  font-weight: 700;
 }
 
+/* Subtitle */
 .page-header .byline {
-  margin: 6px 0 0 0;
+  margin-top: 6px;
   font-size: 14px;
   color: #555;
+}
+
+/* Process book block */
+#charts-footer {
+  background: white;
+  padding: 12px 18px;
+  border-radius: 6px;
+  display: inline-block;
+  margin: 20px auto 40px;
+  text-align: center;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.10);
 }
