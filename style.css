@@ -3,7 +3,7 @@ By Sydney Lundberg and Victoria Mache
 */
 
 body {
-  font-family: "Inter", sans-serif;
+  font-family: "Lato", sans-serif;
   margin: 0;
   padding: 40px;
   background-color: #f9f9f9;
@@ -277,5 +277,5 @@ body {
 }
 
 svg text {
-  font-family: "Inter", sans-serif;
+  font-family: "Lato", sans-serif;
 }
