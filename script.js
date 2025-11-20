@@ -273,7 +273,7 @@ function renderStackedArea() {
       .attr("stroke-dasharray", "3,3")
       .attr("opacity", 0.4);
 
-      const markerCircles = markersGroup.selectAll("circle.esa-marker")
+    const markerCircles = markersGroup.selectAll("circle.esa-marker")
       .data(amendmentData)
       .join("circle")
       .attr("class", "esa-marker")
@@ -307,17 +307,17 @@ function renderStackedArea() {
     
         esaTooltip.select(".esa-detail-btn").on("click", () => {
           esaTooltip.style("opacity", 0);
-    
-          // Scroll to histogram section
-          document.getElementById("chart-hist").scrollIntoView({
-            behavior: "smooth",
-            block: "start"
-          });
-    
-          // Determine which 5-year bin to highlight
+
+          // scroll to histogram container
+          const histEl = document.getElementById("chart-hist");
+          if (histEl) {
+            histEl.scrollIntoView({ behavior: "smooth", block: "start" });
+          }
+
+          // determine start of the next 5-year bin
           const nextStart = Math.ceil(d.year / 5) * 5;
-    
-          // Highlight the correct bar
+
+          // ask histogram to highlight that bin (if function is defined)
           if (window.highlightListingBin) {
             window.highlightListingBin(nextStart);
           }
@@ -586,39 +586,18 @@ function renderHistogram5yr() {
       .style("font-size", "12px")
       .text("Number of Species");
 
+    // Global function so ESA "see details" can highlight a bin
+    window.highlightListingBin = function(targetStartYear) {
+      // Reset all bars
+      bars
+        .attr("fill", "#69b3a2")
+        .attr("opacity", 1);
 
-    
-
-    window.highlightHistogramForAmendment = function(amendmentYear) {
-      if (!bins.length) return;
-
-      const firstStart = bins[0].start;
-      // Bin that contains the amendment year:
-      const binIndex = Math.floor((amendmentYear - firstStart) / 5);
-      const nextIndex = binIndex + 1;
-
-      // Reset all bars to default color
-      bars.attr("fill", "#69b3a2");
-
-      // Highlight the next bin, if it exists
-      if (nextIndex >= 0 && nextIndex < bins.length) {
-        bars
-          .filter((d, i) => i === nextIndex)
-          .attr("fill", "#ff7f0e");
-      }
-        // Global Highlight Button
-      window.highlightListingBin = function(targetStartYear) {
-          // Reset all bars
-        d3.select("#chart-hist").selectAll("rect")
-          .attr("fill", "#69b3a2")
-          .attr("opacity", 1);
-        
-          // Highlight the target bin
-        d3.select("#chart-hist").selectAll("rect")
-          .filter(d => d.start === targetStartYear)
-          .attr("fill", "#111827")    // dark highlight
-          .attr("opacity", 1);
-        };
+      // Highlight the bin whose start year matches
+      bars
+        .filter(d => d.start === targetStartYear)
+        .attr("fill", "#ff7f0e")   // highlight color
+        .attr("opacity", 1);
     };
 
   }).catch(error => {
