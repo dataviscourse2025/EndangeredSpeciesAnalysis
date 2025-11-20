@@ -164,7 +164,7 @@ function renderStackedArea() {
       "endangered_mammals",
       "endangered_birds",
       "endangered_reptiles",
-      "endangered_amphs",
+      "endangered_amphibians",
       "endangered_fish",
       "endangered_snails",
       "endangered_clams",
@@ -244,7 +244,7 @@ function renderStackedArea() {
       .attr("y", legendY - 12)
       .style("font-size", "11px")
       .style("font-weight", "600")
-      .text("Endangered class");
+      .text("Class");
 
     const legendItems = legend.selectAll(".legend-item")
       .data(keys)
@@ -531,7 +531,6 @@ function renderStackedArea() {
     console.error("Error loading or processing data:", error);
   });
 }
-
 
 
 function renderHistogram5yr() {
