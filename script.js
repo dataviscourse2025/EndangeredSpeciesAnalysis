@@ -23,12 +23,12 @@ function renderStackedArea() {
       .style("pointer-events", "none")
       .style("opacity", 0);
 
-    //Title
+    // Title
     container.append("h2")
       .attr("class", "chart-title")
       .text("Number of Endangered Animal Species Per Class");
 
-    // Subtitle to cite the website where we got the data set and historical info from
+    // Subtitle
     container.append("div")
       .attr("class", "chart-subtitle")
       .style("margin", "2px 0 8px 0")
@@ -42,27 +42,27 @@ function renderStackedArea() {
         </a>`
       );
 
-    const amendmentData = [  
+    const amendmentData = [
       {
-          year: 1978,
-          date: new Date(1978, 0, 1),
-          title: "1978 Amendments",
-          text: [
-            "Created a federal committee that can approve actions harming a species.",
-            "Allowed economic factors in habitat decisions.",
-            "Added Agriculture to federal conservation planning.",
-            "Limited protected populations to vertebrates."
-          ]
+        year: 1978,
+        date: new Date(1978, 0, 1),
+        title: "1978 Amendments",
+        text: [
+          "Created a federal committee that can approve actions harming a species.",
+          "Allowed economic factors in habitat decisions.",
+          "Added Agriculture to federal conservation planning.",
+          "Limited protected populations to vertebrates."
+        ]
       },
       {
         year: 1982,
         date: new Date(1982, 0, 1),
         title: "1982 Amendments",
         text: [
-            "Listing decisions must be based only on science, not economics.",
-            "Final listing decisions required in 1 year.",
-            "Allowed experimental populations and Habitat Conservation Plans.",
-            "Added endangered plant protections."
+          "Listing decisions must be based only on science, not economics.",
+          "Final listing decisions required in 1 year.",
+          "Allowed experimental populations and Habitat Conservation Plans.",
+          "Added endangered plant protections."
         ]
       },
       {
@@ -70,10 +70,10 @@ function renderStackedArea() {
         date: new Date(1988, 0, 1),
         title: "1988 Amendments",
         text: [
-            "Required monitoring of candidate and recovered species.",
-            "Strengthened recovery plans and 5-year monitoring of species after being removed from the list.",
-            "Required reports on recovery progress and spending.",
-            "Expanded plant protections."
+          "Required monitoring of candidate and recovered species.",
+          "Strengthened recovery plans and 5-year monitoring of species after being removed from the list.",
+          "Required reports on recovery progress and spending.",
+          "Expanded plant protections."
         ]
       },
       {
@@ -81,12 +81,12 @@ function renderStackedArea() {
         date: new Date(2004, 0, 1),
         title: "2004 Amendments",
         text: [
-            "Department of Defense is exempt from critical habitat restrictions if it has an approved natural resources management plan."
+          "Department of Defense is exempt from critical habitat restrictions if it has an approved natural resources management plan."
         ]
       }
     ];
 
-    // Parse the date and create the stacked area chart, while removing null rows
+    // Parse the date + convert counts to numbers
     const parseDate = d3.timeParse("%-d %b %y");
     data.forEach((d) => {
       d.date = parseDate(d.date);
@@ -96,14 +96,40 @@ function renderStackedArea() {
     });
     data = data.filter(d => d.date !== null);
 
-    // Set the margin and width and height of the chart
+    const fullData = data; // keep full dataset for moving window
+
+    // --- Compute year range for slider ---
+    const minDate = d3.min(fullData, d => d.date);
+    const maxDate = d3.max(fullData, d => d.date);
+    const minYear = minDate.getFullYear();
+    const maxYear = maxDate.getFullYear();
+    const windowSize = 10; // years in the visible window
+
+    // --- Slider UI (inside chart card, above the SVG) ---
+    const sliderControls = container.append("div")
+      .attr("class", "slider-controls");
+
+    sliderControls.append("label")
+      .text("View 10-year window starting in:");
+
+    const slider = sliderControls.append("input")
+      .attr("type", "range")
+      .attr("min", minYear)
+      .attr("max", maxYear - windowSize + 1)
+      .attr("step", 1)
+      .attr("value", minYear);
+
+    const sliderValue = sliderControls.append("span")
+      .attr("class", "slider-value");
+
+    // --- Chart dimensions ---
     const margin = { top: 20, right: 160, bottom: 60, left: 70 };
     const chartElement = document.getElementById('chart');
     const containerWidth = chartElement.clientWidth || 800;
     const width = containerWidth - margin.left - margin.right;
     const height = 400 - margin.top - margin.bottom;
 
-    // Create the SVG element
+    // SVG
     const svg = container
       .append("svg")
       .attr("width", width + margin.left + margin.right)
@@ -111,7 +137,7 @@ function renderStackedArea() {
       .append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
 
-    // Create the keys
+    // Keys and stack generator
     const keys = [
       "endangered_mammals",
       "endangered_birds",
@@ -127,17 +153,11 @@ function renderStackedArea() {
     ];
 
     const stack = d3.stack().keys(keys);
-    const layers = stack(data);
 
-    const x = d3.scaleTime()
-      .domain(d3.extent(data, d => d.date))
-      .range([0, width]);
+    const x = d3.scaleTime().range([0, width]);
+    const y = d3.scaleLinear().range([height, 0]);
 
-    const y = d3.scaleLinear()
-      .domain([0, d3.max(layers, layer => d3.max(layer, d => d[1]))])
-      .range([height, 0]);
-
-      const color = d3.scaleOrdinal()
+    const color = d3.scaleOrdinal()
       .domain(keys)
       .range([
         "#1f77b4", // mammals
@@ -150,7 +170,7 @@ function renderStackedArea() {
         "#7f7f7f", // crustaceans
         "#bcbd22", // insects
         "#17becf", // arachnids
-        "#a55194"  // coral 
+        "#a55194"  // coral
       ]);
 
     const area = d3.area()
@@ -158,22 +178,31 @@ function renderStackedArea() {
       .y0(d => y(d[0]))
       .y1(d => y(d[1]));
 
-    svg.selectAll("path")
-      .data(layers)
-      .join("path")
-      .attr("fill", d => color(d.key))
-      .attr("d", area);
+    const layersGroup = svg.append("g").attr("class", "layers");
 
-    const xAxis = d3.axisBottom(x)
-      .ticks(d3.timeYear.every(10))
-      .tickFormat(d3.timeFormat("%Y"));
+    // Axis groups
+    const xAxisGroup = svg.append("g")
+      .attr("transform", `translate(0,${height})`);
 
-    svg.append("g")
-      .attr("transform", `translate(0,${height})`)
-      .call(xAxis)
-      .selectAll("text")
-      .style("font-size", "11px");
+    const yAxisGroup = svg.append("g");
 
+    // y-axis & x-axis labels
+    svg.append("text")
+      .attr("x", width / 2)
+      .attr("y", height + 40)
+      .attr("text-anchor", "middle")
+      .style("font-size", "12px")
+      .text("Year");
+
+    svg.append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("x", -height / 2)
+      .attr("y", -50)
+      .attr("text-anchor", "middle")
+      .style("font-size", "12px")
+      .text("Number of Species");
+
+    // Left border line
     svg.append("line")
       .attr("x1", 0)
       .attr("x2", 0)
@@ -182,13 +211,7 @@ function renderStackedArea() {
       .attr("stroke", "black")
       .attr("stroke-width", 1);
 
-    const yAxis = d3.axisLeft(y).ticks(5);
-    svg.append("g")
-      .call(yAxis)
-      .selectAll("path, line")
-      .attr("stroke", "black");
-
-    // Create the legend
+    // Legend (static – based on keys only)
     const legend = svg.append("g").attr("class", "legend");
     const legendHeight = keys.length * 22;
     const legendX = width + 20;
@@ -219,59 +242,35 @@ function renderStackedArea() {
         .replace(/\b\w/g, l => l.toUpperCase())
       );
 
-    // The x-axis label
-    svg.append("text")
-      .attr("x", width / 2)
-      .attr("y", height + 40)
-      .attr("text-anchor", "middle")
-      .style("font-size", "12px")
-      .text("Year");
-
-    // The y-axis label
-    svg.append("text")
-      .attr("transform", "rotate(-90)")
-      .attr("x", -height / 2)
-      .attr("y", -50)
-      .attr("text-anchor", "middle")
-      .style("font-size", "12px")
-      .text("Number of Species");
-    
-    // ESA markers
-    const markerY = 10; // a little below the top of the chart area
-
+    // ESA markers group
+    const markerY = 10;
     const markersGroup = svg.append("g")
       .attr("class", "esa-markers");
 
-    markersGroup.selectAll("line.esa-line")
-      .data(amendmentData)
-      .join("line")
-      .attr("class", "esa-line")
-      .attr("x1", d => x(d.date))
-      .attr("x2", d => x(d.date))
-      .attr("y1", markerY + 6)
-      .attr("y2", height)
-      .attr("stroke", "black")
-      .attr("stroke-width", 1)
-      .attr("stroke-dasharray", "3,3")
-      .attr("opacity", 0.4);
-    
+      markersGroup.selectAll("line.esa-line")
+        .data(amendmentData)
+        .join("line")
+        .attr("class", "esa-line")
+        .attr("y1", markerY + 6)
+        .attr("y2", height)
+        .attr("stroke", "black")
+        .attr("stroke-width", 1)
+        .attr("stroke-dasharray", "3,3")
+        .attr("opacity", 0.4);
 
-    markersGroup.selectAll("circle.esa-marker")
-      .data(amendmentData)
-      .join("circle")
-      .attr("class", "esa-marker")
-      .attr("cx", d => x(d.date))
-      .attr("cy", markerY)
-      .attr("r", 6)
-      .attr("fill", "black")
-      .attr("stroke", "white")
-      .attr("stroke-width", 1.5)
-      .style("cursor", "pointer")
-      .on("click", (event, d) => {
-        // prevent the document click handler from immediately hiding it
+      markersGroup.selectAll("circle.esa-marker")
+        .data(amendmentData)
+        .join("circle")
+        .attr("class", "esa-marker")
+        .attr("cy", markerY)
+        .attr("r", 6)
+        .attr("fill", "black")
+        .attr("stroke", "white")
+        .attr("stroke-width", 1.5)
+        .style("cursor", "pointer")
+        .on("click", (event, d) => {
         event.stopPropagation();
-        
-        const html = `
+          const html = `
         <div style="font-weight:700; margin-bottom:6px;">
           ${d.title}
         </div>
@@ -279,27 +278,85 @@ function renderStackedArea() {
           ${d.text.map(t => `<li>${t}</li>`).join("")}
         </ul>
         `;
-
-        esaTooltip
-          .html(html)
-          .style("left", (event.pageX + 10) + "px")
-          .style("top", (event.pageY + 10) + "px")
-          .style("opacity", 1);
+          esaTooltip
+            .html(html)
+            .style("left", (event.pageX + 10) + "px")
+            .style("top", (event.pageY + 10) + "px")
+            .style("opacity", 1);
       });
 
-    // Click anywhere else to hide the tooltip
+    // Click elsewhere hides ESA tooltip
     d3.select(document).on("click.esa-tooltip", (event) => {
-      const target = event.target;    
+      const target = event.target;
       if (
         (target.classList && target.classList.contains("esa-marker")) ||
         (target.closest && target.closest(".esa-tooltip"))
-      ) {
-        return;
-      }    
+      ) return;
       esaTooltip.style("opacity", 0);
     });
 
-    // Error handling
+    // Window update function
+    function updateWindow(startYear) {
+      const endYear = startYear + windowSize - 1;
+      sliderValue.text(`${startYear}–${endYear}`);
+
+      const startDate = new Date(startYear, 0, 1);
+      const endDate = new Date(endYear, 11, 31);
+
+      const windowData = fullData.filter(d => d.date >= startDate && d.date <= endDate);
+      if (windowData.length === 0) return;
+
+      const layers = stack(windowData);
+
+      x.domain(d3.extent(windowData, d => d.date));
+      y.domain([0, d3.max(layers, layer => d3.max(layer, d => d[1]))]).nice();
+
+      // Update areas
+      const paths = layersGroup.selectAll("path.layer")
+        .data(layers, d => d.key);
+
+      paths.join(
+        enter => enter.append("path")
+          .attr("class", "layer")
+          .attr("fill", d => color(d.key))
+          .attr("d", area),
+        update => update.transition().duration(400).attr("d", area),
+        exit => exit.remove()
+      );
+
+      // Update axes 
+      const xAxis = d3.axisBottom(x)
+        .ticks(d3.timeYear.every(1))
+        .tickFormat(d3.timeFormat("%Y"));
+
+      const yAxis = d3.axisLeft(y).ticks(5);
+
+      xAxisGroup.transition().duration(400).call(xAxis)
+        .selectAll("text")
+        .style("font-size", "11px");
+
+      yAxisGroup.transition().duration(400).call(yAxis)
+        .selectAll("path, line")
+        .attr("stroke", "black");
+
+      // Update ESA marker positions for current scale
+      markersGroup.selectAll("line.esa-line")
+        .attr("x1", d => x(d.date))
+        .attr("x2", d => x(d.date));
+
+      markersGroup.selectAll("circle.esa-marker")
+        .attr("cx", d => x(d.date));
+    }
+
+    // Hook slider to updateWindow
+    slider.on("input", (event) => {
+      const startYear = +event.target.value;
+      updateWindow(startYear);
+    });
+
+    // Earliest 10-year window
+    updateWindow(minYear);
+
   }).catch(error => {
     console.error("Error loading or processing data:", error);
   });
