@@ -237,25 +237,25 @@ body {
   padding: 0;
 }
 
-/* Title + subtitle background block */
-.page-header h1,
-.page-header .byline {
-  display: inline-block;
-  padding: 8px 16px;
-  background: rgba(255, 255, 255, 0.85);
-  border-radius: 8px;
-  backdrop-filter: blur(4px);
-}
-
 .page-header {
+  background: white;
+  padding: 22px 40px;
+  border-radius: 14px;
+  width: fit-content;
+  margin: 40px auto;
   text-align: center;
-  margin-bottom: 30px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.12);
 }
 
-#charts-footer {
-  display: inline-block;
-  padding: 8px 16px;
-  background: rgba(255, 255, 255, 0.85);
-  border-radius: 8px;
-  backdrop-filter: blur(4px);
+.page-header h1 {
+  margin: 0;
+  font-size: 28px;
+  color: #111;
+  font-weight: 700;
+}
+
+.page-header .byline {
+  margin: 6px 0 0 0;
+  font-size: 14px;
+  color: #555;
 }
