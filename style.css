@@ -226,3 +226,16 @@ h1 {
   transform: translateY(0);
   box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2);
 }
+
+.background-wrapper {
+  background-image: url("fern.jpg");
+  background-size: cover;
+  padding: 40px;
+  border-radius: 20px;
+}
+
+#chart {
+  background: white;        /* chart stays readable */
+  padding: 20px;
+  border-radius: 12px;
+}
