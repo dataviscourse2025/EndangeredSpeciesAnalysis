@@ -126,7 +126,7 @@ function renderStackedArea() {
       .attr("class", "slider-controls");
 
     controls.append("label")
-      .text("View 10-year window starting in:");
+      .text("Timeline: 10-year window");
 
     const slider = controls.append("input")
       .attr("type", "range")

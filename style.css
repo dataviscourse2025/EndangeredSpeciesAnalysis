@@ -146,6 +146,7 @@ h1 {
   flex: 1;
   height: 6px;
   border-radius: 999px;
+  background: (90deg, #a1a1a1);
   outline: none;
   cursor: pointer;
 }
