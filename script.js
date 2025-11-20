@@ -87,6 +87,23 @@ function renderStackedArea() {
       }
     ];
 
+    // helper: when "See details" is clicked in ESA tooltip
+    function handleAmendmentDetails(amendment) {
+      // highlight the 5-year bin for the NEXT 5 years after the amendment
+      const startYear = amendment.year + 1;
+      const endYear = amendment.year + 5;
+
+      if (typeof window.highlightHistogramRange === "function") {
+        window.highlightHistogramRange(startYear, endYear);
+      }
+
+      // scroll smoothly to the bar chart container
+      const histEl = document.getElementById("chart-hist");
+      if (histEl) {
+        histEl.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }
+
     // Parse dates 
     const parseDate = d3.timeParse("%-d %b %y");
     data.forEach(d => {
@@ -289,14 +306,32 @@ function renderStackedArea() {
         <div style="font-weight:700; margin-bottom:6px;">
           ${d.title}
         </div>
-        <ul style="margin:0 0 0 18px; padding:0; font-size:14px; line-height:1.3;">
+        <ul style="margin:0 0 6px 18px; padding:0; font-size:14px; line-height:1.3;">
           ${d.text.map(t => `<li>${t}</li>`).join("")}
-        </ul>`;
+        </ul>
+        <button class="esa-detail-btn" style="
+          margin-top:4px;
+          padding:4px 10px;
+          border-radius:4px;
+          border:1px solid #111;
+          background:#111;
+          color:#fff;
+          font-size:13px;
+          cursor:pointer;">
+          See details
+        </button>`;
         esaTooltip
           .html(html)
           .style("left", (event.pageX + 10) + "px")
           .style("top", (event.pageY + 10) + "px")
           .style("opacity", 1);
+
+        // hook up the See details button
+        esaTooltip.select(".esa-detail-btn")
+          .on("click", ev => {
+            ev.stopPropagation();
+            handleAmendmentDetails(d);
+          });
       });
 
     // Hide tooltip when clicking elsewhere
@@ -318,7 +353,6 @@ function renderStackedArea() {
 
       const windowData = fullData.filter(d => d.date >= startDate && d.date <= endDate);
       if (!windowData.length) return;
-      currentWindowData = windowData;
 
       const layers = stack(windowData);
 
@@ -422,27 +456,29 @@ function renderStackedArea() {
       }
     });
 
-  const activeKeys = new Set(keys);  // start with all layers visible
+    // CLICKABLE LEGEND TO TOGGLE LAYERS
+    const activeKeys = new Set(keys);  // start with all layers visible
 
-  legendItems.on("click", function (event, key) {
-    if (activeKeys.has(key)) {
-      activeKeys.delete(key);
-    }   else {
-     activeKeys.add(key);
-    }
+    legendItems.on("click", function (event, key) {
+      if (activeKeys.has(key)) {
+        activeKeys.delete(key);
+      } else {
+        activeKeys.add(key);
+      }
 
-    // Toggle highlight in legend
-    legendItems.selectAll("rect")
-      .attr("opacity", d => activeKeys.has(d) ? 1 : 0.3);
+      // Toggle highlight in legend
+      legendItems.selectAll("rect")
+        .attr("opacity", d => activeKeys.has(d) ? 1 : 0.3);
 
-    legendItems.selectAll("text")
-      .attr("opacity", d => activeKeys.has(d) ? 1 : 0.3);
+      legendItems.selectAll("text")
+        .attr("opacity", d => activeKeys.has(d) ? 1 : 0.3);
 
-    // Toggle the layers
-    layersGroup.selectAll("path.layer")
-      .attr("opacity", d => activeKeys.has(d.key) ? 1 : 0.05);
-});
+      // Toggle the layers
+      layersGroup.selectAll("path.layer")
+        .attr("opacity", d => activeKeys.has(d.key) ? 1 : 0.05);
+    });
 
+    // initial window
     updateWindow(minYear);
 
   }).catch(error => {
@@ -466,8 +502,8 @@ function renderHistogram5yr() {
       .attr("class", "chart-title")
       .text("Number of Species Added to the Endangered Species List");
 
-      // Subtitle to cite the website where we got the data set and historical info from
-      container.append("div")
+    // Subtitle
+    container.append("div")
       .attr("class", "chart-subtitle")
       .style("text-align", "left")
       .style("margin", "4px 0 12px 0")
@@ -499,7 +535,9 @@ function renderHistogram5yr() {
     const start = Math.floor(minYear / 5) * 5;
     const end = Math.floor(maxYear / 5) * 5 + 4;
     const bins = [];
-    for (let s = start; s <= end; s += 5) bins.push({ start: s, end: s + 4, label: `${s}–${s + 4}`, total: 0 });
+    for (let s = start; s <= end; s += 5) {
+      bins.push({ start: s, end: s + 4, label: `${s}–${s + 4}`, total: 0 });
+    }
 
     data.forEach(d => {
       const i = Math.floor((d.year - start) / 5);
@@ -516,7 +554,7 @@ function renderHistogram5yr() {
       .range([height, 0]);
 
     // Create the bars
-    svg.selectAll("rect")
+    const bars = svg.selectAll("rect")
       .data(bins)
       .join("rect")
       .attr("x", d => x(d.label))
@@ -554,7 +592,16 @@ function renderHistogram5yr() {
       .style("font-size", "12px")
       .text("Number of Species");
 
-    // Error handling
+    // Function to highlight the bin covering a given year range
+    // (used by stacked area "See details" buttons)
+    window.highlightHistogramRange = function(startYear, endYear) {
+      const selectedBin = bins.find(b => b.end >= startYear && b.start <= endYear);
+
+      bars
+        .attr("fill", d => d === selectedBin ? "#1f77b4" : "#69b3a2")
+        .attr("opacity", d => d === selectedBin ? 1 : 0.4);
+    };
+
   }).catch(error => {
     console.error("Error loading or processing data:", error);
   });
@@ -612,14 +659,15 @@ function renderUSMap() {
       }
     });
 
-    const color = d3.scaleLinear().domain([0, 0.5 * maxVal, maxVal]).range(["#ffeeee", "#b30000", "#2b0000"]);
+    const color = d3.scaleLinear()
+      .domain([0, 0.5 * maxVal, maxVal])
+      .range(["#ffeeee", "#b30000", "#2b0000"]);
 
     const allStates = topojson.feature(us, us.objects.states).features;
 
     const usableStates = allStates.filter(f => {
       const key = normalize(f.properties.name || f.id);
       const hasData = Object.prototype.hasOwnProperty.call(data, key);
-  
       return hasData;
     });
 
@@ -700,12 +748,7 @@ function renderUSMap() {
   );
 }
 
-
-
-
-
 // Render charts
 renderStackedArea();
 renderHistogram5yr();
 renderUSMap();
-
