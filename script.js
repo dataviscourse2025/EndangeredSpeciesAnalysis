@@ -422,25 +422,26 @@ function renderStackedArea() {
       }
     });
 
-    legendItems
-      .on("mouseenter", (event, key) => {
-        layersGroup.selectAll("path.layer")
-          .transition().duration(150)
-          .attr("opacity", d => d.key === key ? 1 : 0.15);
+  const activeKeys = new Set(keys);  // start with all layers visible
 
-        legendItems.selectAll("text")
-          .transition().duration(150)
-          .style("opacity", d => d === key ? 1 : 0.5);
-      })
-      .on("mouseleave", () => {
-        layersGroup.selectAll("path.layer")
-          .transition().duration(150)
-          .attr("opacity", 1);
+  legendItems.on("click", function (event, key) {
+    if (activeKeys.has(key)) {
+      activeKeys.delete(key);
+    }   else {
+     activeKeys.add(key);
+    }
 
-        legendItems.selectAll("text")
-          .transition().duration(150)
-          .style("opacity", 1);
-      });
+    // Toggle highlight in legend
+    legendItems.selectAll("rect")
+      .attr("opacity", d => activeKeys.has(d) ? 1 : 0.3);
+
+    legendItems.selectAll("text")
+      .attr("opacity", d => activeKeys.has(d) ? 1 : 0.3);
+
+    // Toggle the layers
+    layersGroup.selectAll("path.layer")
+      .attr("opacity", d => activeKeys.has(d.key) ? 1 : 0.05);
+});
 
     updateWindow(minYear);
 
@@ -708,14 +709,3 @@ renderStackedArea();
 renderHistogram5yr();
 renderUSMap();
 
-
-// Process book link under the graphs
-d3.select("#charts-footer")
-  .html(
-    `Process Book: <a href="https://docs.google.com/document/d/1inqMCG3sclhjJdvcv6JamtF6awbrJH3HxLTgbcfDhYU/edit?tab=t.0"
-       target="_blank" rel="noopener noreferrer">
-       https://docs.google.com/document/d/1inqMCG3sclhjJdvcv6JamtF6awbrJH3HxLTgbcfDhYU/edit?tab=t.0
-     </a>`
-  )
-  .style("margin", "16px 0 40px")
-  .style("font-size", "12px");
