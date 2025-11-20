@@ -137,9 +137,21 @@ function renderStackedArea() {
       .domain([0, d3.max(layers, layer => d3.max(layer, d => d[1]))])
       .range([height, 0]);
 
-    const color = d3.scaleOrdinal()
+      const color = d3.scaleOrdinal()
       .domain(keys)
-      .range(d3.schemeCategory10);
+      .range([
+        "#1f77b4", // mammals
+        "#ff7f0e", // birds
+        "#2ca02c", // reptiles
+        "#d62728", // amphs
+        "#9467bd", // fish
+        "#8c564b", // snails
+        "#e377c2", // clams
+        "#7f7f7f", // crustaceans
+        "#bcbd22", // insects
+        "#17becf", // arachnids
+        "#a55194"  // coral 
+      ]);
 
     const area = d3.area()
       .x(d => x(d.data.date))
