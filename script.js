@@ -273,7 +273,7 @@ function renderStackedArea() {
       .attr("stroke-dasharray", "3,3")
       .attr("opacity", 0.4);
 
-    const markerCircles = markersGroup.selectAll("circle.esa-marker")
+      const markerCircles = markersGroup.selectAll("circle.esa-marker")
       .data(amendmentData)
       .join("circle")
       .attr("class", "esa-marker")
@@ -285,50 +285,43 @@ function renderStackedArea() {
       .style("cursor", "pointer")
       .on("click", (event, d) => {
         event.stopPropagation();
-
+    
         const html = `
-        <div style="font-weight:700; margin-bottom:6px;">
-          ${d.title}
-        </div>
-        <ul style="margin:0 0 8px 18px; padding:0; font-size:14px; line-height:1.3;">
-          ${d.text.map(t => `<li>${t}</li>`).join("")}
-        </ul>
-        <button class="esa-detail-btn" style="
-          margin-top:4px;
-          padding:4px 10px;
-          border-radius:4px;
-          border:1px solid #111;
-          background:#111;
-          color:white;
-          font-size:13px;
-          cursor:pointer;">
-          See details
-        </button>
+          <div style="font-weight:700; margin-bottom:6px;">${d.title}</div>
+          <ul style="margin:0 0 6px 18px; padding:0; font-size:14px; line-height:1.3;">
+            ${d.text.map(t => `<li>${t}</li>`).join("")}
+          </ul>
+    
+          <button class="esa-detail-btn"
+            style="margin-top:4px; padding:4px 10px; border-radius:4px;
+                   border:1px solid #111; background:#111; color:#fff;
+                   font-size:13px; cursor:pointer;">
+            See details
+          </button>
         `;
-
-        esaTooltip
-          .html(html)
+    
+        esaTooltip.html(html)
           .style("left", (event.pageX + 10) + "px")
           .style("top", (event.pageY + 10) + "px")
           .style("opacity", 1);
-
-        // Wire up the "See details" button:
-        esaTooltip.select(".esa-detail-btn")
-          .on("click", () => {
-            // Smooth scroll to the histogram section
-            const histEl = document.getElementById("chart-hist");
-            if (histEl) {
-              histEl.scrollIntoView({ behavior: "smooth", block: "start" });
-            }
-
-            // Highlight the relevant 5-year bar AFTER the amendment year
-            if (window.highlightHistogramForAmendment) {
-              window.highlightHistogramForAmendment(d.year);
-            }
-
-            // Optionally hide the tooltip after clicking
-            esaTooltip.style("opacity", 0);
+    
+        esaTooltip.select(".esa-detail-btn").on("click", () => {
+          esaTooltip.style("opacity", 0);
+    
+          // Scroll to histogram section
+          document.getElementById("chart-hist").scrollIntoView({
+            behavior: "smooth",
+            block: "start"
           });
+    
+          // Determine which 5-year bin to highlight
+          const nextStart = Math.ceil(d.year / 5) * 5;
+    
+          // Highlight the correct bar
+          if (window.highlightListingBin) {
+            window.highlightListingBin(nextStart);
+          }
+        });
       });
 
     // Hide tooltip when clicking elsewhere
@@ -593,9 +586,9 @@ function renderHistogram5yr() {
       .style("font-size", "12px")
       .text("Number of Species");
 
-    // === GLOBAL HIGHLIGHT FUNCTION ===
-    // Called from the stacked area "See details" button.
-    // It highlights the *next* 5-year bin after the amendment year.
+
+    
+
     window.highlightHistogramForAmendment = function(amendmentYear) {
       if (!bins.length) return;
 
@@ -613,6 +606,19 @@ function renderHistogram5yr() {
           .filter((d, i) => i === nextIndex)
           .attr("fill", "#ff7f0e");
       }
+        // Global Highlight Button
+      window.highlightListingBin = function(targetStartYear) {
+          // Reset all bars
+        d3.select("#chart-hist").selectAll("rect")
+          .attr("fill", "#69b3a2")
+          .attr("opacity", 1);
+        
+          // Highlight the target bin
+        d3.select("#chart-hist").selectAll("rect")
+          .filter(d => d.start === targetStartYear)
+          .attr("fill", "#111827")    // dark highlight
+          .attr("opacity", 1);
+        };
     };
 
   }).catch(error => {
