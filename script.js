@@ -342,6 +342,12 @@ function renderStackedArea() {
         .selectAll("path, line")
         .attr("stroke", "black");
 
+      xAxisGroup.selectAll("path, line")
+        .attr("stroke", "#9ca3af");
+
+      yAxisGroup.selectAll("path, line")
+        .attr("stroke", "#9ca3af");
+
       // Re-position ESA markers 
       markerLines
         .attr("x1", d => x(d.date))
@@ -360,15 +366,20 @@ function renderStackedArea() {
     function startPlaying() {
       if (isPlaying) return;
       isPlaying = true;
-      playButton.text("❚❚ Pause");
-
+    
+      playButton
+        .text(" Play")
+        .classed("is-playing", true);
+    
       playInterval = d3.interval(() => {
         let current = +slider.property("value");
+    
         if (current >= maxYear - windowSize + 1) {
-          current = minYear; 
+          current = minYear;
         } else {
-          current += 1;
+          current += 1; 
         }
+    
         slider.property("value", current);
         updateWindow(current);
       }, 800);
@@ -376,12 +387,17 @@ function renderStackedArea() {
 
     function stopPlaying() {
       isPlaying = false;
-      playButton.text("▶ Play");
+    
+      playButton
+        .text(" Play")
+        .classed("is-playing", false);
+    
       if (playInterval) {
         playInterval.stop();
         playInterval = null;
       }
     }
+    
 
     playButton.on("click", () => {
       if (isPlaying) {

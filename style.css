@@ -105,40 +105,126 @@ h1 {
 
 /* Slider controls for stacked area */
 .slider-controls {
-  width: 90%;
-  max-width: 1000px;
-  margin: 0 auto 10px auto;
+  width: 100%;
+  max-width: 900px;
+  margin: 16px auto 0 auto;
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 14px;
+  gap: 14px;
+  font-size: 13px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(15, 23, 42, 0.06); /* soft divider */
 }
 
 .slider-controls label {
-  white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
   font-weight: 600;
+  font-size: 11px;
+  color: #6b7280;
+  white-space: nowrap;
 }
 
-.slider-controls input[type="range"] {
-  flex: 1;
-}
-
+/* Make the year window look like a pill badge */
 .slider-value {
   min-width: 90px;
-  text-align: right;
+  text-align: center;
   font-weight: 600;
+  font-size: 12px;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+    "Segoe UI", sans-serif;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #0f172a;
+  color: #f9fafb;
 }
 
-/* Play & pause button */
-.play-button {
-  padding: 4px 10px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  background: #f7f7f7;
+/* Range slider restyle */
+.slider-controls input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  flex: 1;
+  height: 6px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #1f77b4, #ff7f0e, #e377c2);
+  outline: none;
   cursor: pointer;
-  font-size: 13px;
+}
+
+/* WebKit thumb (Chrome/Safari) */
+.slider-controls input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2px solid #111827;
+  box-shadow: 0 2px 4px rgba(15, 23, 42, 0.25);
+  margin-top: -6px; /* centers thumb on track */
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.slider-controls input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.06);
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.35);
+}
+
+/* Firefox thumb */
+.slider-controls input[type="range"]::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2px solid #111827;
+  box-shadow: 0 2px 4px rgba(15, 23, 42, 0.25);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.slider-controls input[type="range"]::-moz-range-thumb:hover {
+  transform: scale(1.06);
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.35);
+}
+
+/* Firefox track */
+.slider-controls input[type="range"]::-moz-range-track {
+  height: 6px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #1f77b4, #ff7f0e, #e377c2);
+}
+
+.play-button {
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: none;
+  background: #111827;
+  color: #f9fafb;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.25);
+  transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+}
+
+.play-button::before {
+  content: "▶";
+  font-size: 11px;
+}
+
+.play-button.is-playing::before {
+  content: "❚❚";
 }
 
 .play-button:hover {
-  background: #ececec;
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.3);
+  background: #020617;
+}
+
+.play-button:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2);
 }
