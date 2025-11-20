@@ -228,7 +228,7 @@ h1 {
 }
 
 body {
-  background-image: url("nature.jpeg"); 
+  background-image: url("nature.jpg"); 
   background-size: cover;       
   background-repeat: no-repeat;  
   background-position: center;   
@@ -236,7 +236,3 @@ body {
   margin: 0;
   padding: 0;
 }
-
-/* html, body {
-  height: 100%;
-} */
