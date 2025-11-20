@@ -35,7 +35,7 @@ function renderStackedArea() {
       .html(
         `Sources: 
         <a href="https://www.kaggle.com/datasets/chirayurijal/worldwildlifespeciesdata" target="_blank" rel="noopener noreferrer">
-          World Wildlife Species Data
+          Wildlife Species Data
         </a> • 
         <a href="https://www.fws.gov/page/endangered-species-act-amendments" target="_blank" rel="noopener noreferrer">
           Endangered Species Act Amendments
@@ -104,8 +104,23 @@ function renderStackedArea() {
     const minYear = minDate.getFullYear();
     const maxYear = maxDate.getFullYear();
     const windowSize = 10; 
+    
+    // Chart dimensions
+    const margin = { top: 20, right: 160, bottom: 60, left: 70 };
+    const chartElement = document.getElementById('chart');
+    const containerWidth = chartElement.clientWidth || 800;
+    const width = containerWidth - margin.left - margin.right;
+    const height = 400 - margin.top - margin.bottom;
 
-    // Slider UI 
+    // SVG
+    const svg = container
+      .append("svg")
+      .attr("width", width + margin.left + margin.right)
+      .attr("height", height + margin.top + margin.bottom)
+      .append("g")
+      .attr("transform", `translate(${margin.left},${margin.top})`);
+
+    // Slider UI
     const sliderControls = container.append("div")
       .attr("class", "slider-controls");
 
@@ -121,21 +136,6 @@ function renderStackedArea() {
 
     const sliderValue = sliderControls.append("span")
       .attr("class", "slider-value");
-
-    // Chart dimensions
-    const margin = { top: 20, right: 160, bottom: 60, left: 70 };
-    const chartElement = document.getElementById('chart');
-    const containerWidth = chartElement.clientWidth || 800;
-    const width = containerWidth - margin.left - margin.right;
-    const height = 400 - margin.top - margin.bottom;
-
-    // SVG
-    const svg = container
-      .append("svg")
-      .attr("width", width + margin.left + margin.right)
-      .attr("height", height + margin.top + margin.bottom)
-      .append("g")
-      .attr("transform", `translate(${margin.left},${margin.top})`);
 
     // Keys and stack generator
     const keys = [
