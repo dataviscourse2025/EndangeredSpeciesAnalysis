@@ -87,23 +87,6 @@ function renderStackedArea() {
       }
     ];
 
-    // helper: when "See details" is clicked in ESA tooltip
-    function handleAmendmentDetails(amendment) {
-      // highlight the 5-year bin for the NEXT 5 years after the amendment
-      const startYear = amendment.year + 1;
-      const endYear = amendment.year + 5;
-
-      if (typeof window.highlightHistogramRange === "function") {
-        window.highlightHistogramRange(startYear, endYear);
-      }
-
-      // scroll smoothly to the bar chart container
-      const histEl = document.getElementById("chart-hist");
-      if (histEl) {
-        histEl.scrollIntoView({ behavior: "smooth", block: "start" });
-      }
-    }
-
     // Parse dates 
     const parseDate = d3.timeParse("%-d %b %y");
     data.forEach(d => {
@@ -302,11 +285,12 @@ function renderStackedArea() {
       .style("cursor", "pointer")
       .on("click", (event, d) => {
         event.stopPropagation();
+
         const html = `
         <div style="font-weight:700; margin-bottom:6px;">
           ${d.title}
         </div>
-        <ul style="margin:0 0 6px 18px; padding:0; font-size:14px; line-height:1.3;">
+        <ul style="margin:0 0 8px 18px; padding:0; font-size:14px; line-height:1.3;">
           ${d.text.map(t => `<li>${t}</li>`).join("")}
         </ul>
         <button class="esa-detail-btn" style="
@@ -315,22 +299,35 @@ function renderStackedArea() {
           border-radius:4px;
           border:1px solid #111;
           background:#111;
-          color:#fff;
+          color:white;
           font-size:13px;
           cursor:pointer;">
           See details
-        </button>`;
+        </button>
+        `;
+
         esaTooltip
           .html(html)
           .style("left", (event.pageX + 10) + "px")
           .style("top", (event.pageY + 10) + "px")
           .style("opacity", 1);
 
-        // hook up the See details button
+        // Wire up the "See details" button:
         esaTooltip.select(".esa-detail-btn")
-          .on("click", ev => {
-            ev.stopPropagation();
-            handleAmendmentDetails(d);
+          .on("click", () => {
+            // Smooth scroll to the histogram section
+            const histEl = document.getElementById("chart-hist");
+            if (histEl) {
+              histEl.scrollIntoView({ behavior: "smooth", block: "start" });
+            }
+
+            // Highlight the relevant 5-year bar AFTER the amendment year
+            if (window.highlightHistogramForAmendment) {
+              window.highlightHistogramForAmendment(d.year);
+            }
+
+            // Optionally hide the tooltip after clicking
+            esaTooltip.style("opacity", 0);
           });
       });
 
@@ -344,6 +341,9 @@ function renderStackedArea() {
       esaTooltip.style("opacity", 0);
     });
 
+    // Store current window data if you want to reuse later
+    let currentWindowData = [];
+
     function updateWindow(startYear) {
       const endYear = startYear + windowSize - 1;
       sliderValue.text(`${startYear}–${endYear}`);
@@ -353,6 +353,7 @@ function renderStackedArea() {
 
       const windowData = fullData.filter(d => d.date >= startDate && d.date <= endDate);
       if (!windowData.length) return;
+      currentWindowData = windowData;
 
       const layers = stack(windowData);
 
@@ -592,14 +593,26 @@ function renderHistogram5yr() {
       .style("font-size", "12px")
       .text("Number of Species");
 
-    // Function to highlight the bin covering a given year range
-    // (used by stacked area "See details" buttons)
-    window.highlightHistogramRange = function(startYear, endYear) {
-      const selectedBin = bins.find(b => b.end >= startYear && b.start <= endYear);
+    // === GLOBAL HIGHLIGHT FUNCTION ===
+    // Called from the stacked area "See details" button.
+    // It highlights the *next* 5-year bin after the amendment year.
+    window.highlightHistogramForAmendment = function(amendmentYear) {
+      if (!bins.length) return;
 
-      bars
-        .attr("fill", d => d === selectedBin ? "#1f77b4" : "#69b3a2")
-        .attr("opacity", d => d === selectedBin ? 1 : 0.4);
+      const firstStart = bins[0].start;
+      // Bin that contains the amendment year:
+      const binIndex = Math.floor((amendmentYear - firstStart) / 5);
+      const nextIndex = binIndex + 1;
+
+      // Reset all bars to default color
+      bars.attr("fill", "#69b3a2");
+
+      // Highlight the next bin, if it exists
+      if (nextIndex >= 0 && nextIndex < bins.length) {
+        bars
+          .filter((d, i) => i === nextIndex)
+          .attr("fill", "#ff7f0e");
+      }
     };
 
   }).catch(error => {
