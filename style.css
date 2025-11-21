@@ -1,285 +1,156 @@
-/*
-By Sydney Lundberg and Victoria Mache
-*/
+html {
+  scroll-behavior: smooth; /* enables smooth scrollIntoView */
+}
 
 body {
   font-family: "Lato", sans-serif;
   margin: 0;
-  padding: 40px;
-  background-color: #f9f9f9;
-}
-
-/* Title section */
-h1 {
-  text-align: center;
-  margin-bottom: 10px;
-}
-
-.byline {
-  text-align: center;
-  color: #555;
-  margin-bottom: 6px;
-}
-
-/* Container styling for charts */
-#chart,
-#chart-hist,
-#chart-map {
-  width: 90%;
-  max-width: 1000px;
-  margin: 0 auto 40px auto;
-  background-color: white;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-
-/* Ensure all SVGs scale properly and don’t distort */
-#chart svg,
-#chart-hist svg,
-#chart-map svg {
-  display: block;
-  margin: 0 auto;
-  width: 100%;
-  height: auto;
-}
-
-/* Map path styling */
-#chart-map path {
-  stroke: #fff;
-  stroke-width: 0.5px;
-}
-
-/* Optional hover effect */
-#chart-map path:hover {
-  stroke: #000;
-  stroke-width: 1px;
-}
-
-/* Tooltip styling */
-.tooltip {
-  position: absolute;
-  text-align: center;
-  padding: 6px 10px;
-  font-size: 12px;
-  background: rgba(0, 0, 0, 0.7);
-  color: #fff;
-  border-radius: 4px;
-  pointer-events: none;
-}
-
-/* Legend styling */
-.legend {
-  font-family: Arial, sans-serif;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-top: 10px;
-}
-
-.legend-item {
-  display: flex;
-  align-items: center;
-  margin-right: 10px;
-}
-
-.legend-item rect {
-  stroke: #ccc;
-  stroke-width: 0.5px;
-}
-
-.legend-item text {
-  font-size: 12px;
-  fill: #333;
-  margin-left: 4px;
-}
-
-.esa-marker {
-  transition: fill 0.15s ease, stroke-width 0.15s ease;
-}
-
-.esa-marker:hover {
-  fill: #444;
-  stroke-width: 2px;
-}
-
-/* Slider controls for stacked area */
-/* --- Simple, clean timeline slider --- */
-.slider-controls {
-  width: 100%;
-  max-width: 900px;
-  margin: 18px auto 0;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 13px;
-  padding-top: 12px;
-  border-top: 1px solid rgba(0, 0, 0, 0.08);
-}
-
-/* Neutral label */
-.slider-controls label {
-  font-weight: 600;
-  font-size: 11px;
-  letter-spacing: 0.05em;
-  color: #6b7280;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-
-/* Year window pill */
-.slider-value {
-  min-width: 90px;
-  text-align: center;
-  font-weight: 600;
-  font-size: 12px;
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: #111827;
-  color: #f9fafb;
-}
-
-/* --- CLEAN RANGE SLIDER TRACK --- */
-.slider-controls input[type="range"] {
-  -webkit-appearance: none;
-  appearance: none;
-  flex: 1;
-  height: 6px;
-  background: #d1d5db;          /* soft gray */
-  border-radius: 999px;
-  outline: none;
-  cursor: pointer;
-}
-
-/* Chrome/Safari thumb */
-.slider-controls input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 18px;
-  height: 18px;
-  background: white;
-  border-radius: 50%;
-  border: 2px solid #111827;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
-  transition: 0.15s ease;
-}
-
-.slider-controls input[type="range"]::-webkit-slider-thumb:hover {
-  transform: scale(1.07);
-}
-
-/* Firefox thumb */
-.slider-controls input[type="range"]::-moz-range-thumb {
-  width: 18px;
-  height: 18px;
-  background: white;
-  border-radius: 50%;
-  border: 2px solid #111827;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
-  transition: 0.15s ease;
-}
-
-.slider-controls input[type="range"]::-moz-range-thumb:hover {
-  transform: scale(1.07);
-}
-
-/* Firefox track */
-.slider-controls input[type="range"]::-moz-range-track {
-  height: 6px;
-  background: #d1d5db;
-  border-radius: 999px;
-}
-
-/* Play button */
-.play-button {
-  padding: 6px 14px;
-  border-radius: 999px;
-  border: none;
-  background: #111827;
-  color: #f9fafb;
-  cursor: pointer;
-  font-size: 12px;
-  font-weight: 600;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.25);
-  transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
-}
-
-.play-button::before {
-  content: "▶";
-  font-size: 11px;
-}
-
-.play-button.is-playing::before {
-  content: "❚❚";
-}
-
-.play-button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.3);
-  background: #020617;
-}
-
-.play-button:active {
-  transform: translateY(0);
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2);
-}
-
-body {
-  background-image: url("nature.jpg"); 
-  background-size: cover;       
-  background-repeat: no-repeat;  
-  background-position: center;   
-  background-attachment: fixed;  
-  margin: 0;
-  padding: 0;
-}
-
-/* Clean header block behind title + subtitle */
-.page-header {
-  background: white;
-  padding: 20px 0;
-  text-align: center;
-  margin-bottom: 40px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.10);
-}
-
-/* Title */
-.page-header h1 {
-  margin: 0;
-  font-size: 28px;
+  padding: 40px;                    /* keeps space around charts */
+  background-image: url("nature.jpg");
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-attachment: scroll;    /* <<< FIX: prevents scrollIntoView glitch */
+  overflow-y: auto;                 /* ensure scrolling works */
   color: #111;
 }
 
-/* Subtitle */
-.page-header .byline {
-  margin-top: 6px;
-  font-size: 14px;
-  color: #555;
+.page-header {
+  text-align: center;
+  margin-bottom: 40px;
 }
 
-.process-book {
-  margin-top: 6px;
-  font-size: 14px;
-  text-align: center;
+.byline {
+  margin-top: -6px;
+  color: #111;
 }
 
 .process-book a {
-  color: #1d4ed8;
-  text-decoration: none;
+  font-size: 15px;
+  color: #1a4bb8;
+}
+
+#chart,
+#chart-hist,
+#chart-map {
+  margin-top: 50px;
+  padding: 30px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.85); /* clean card background */
+  backdrop-filter: blur(2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* Ensure scrollIntoView lands nicely */
+#chart-hist {
+  scroll-margin-top: 100px; /* <<< FIX: perfect scroll position */
+}
+
+
+.chart-title {
+  text-align: center;
+  margin-bottom: 6px;
+  font-weight: 700;
+  font-size: 22px;
+}
+
+.chart-subtitle {
+  text-align: center;
+  color: #333;
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+.chart-subtitle a {
+  color: #1a4bb8;
+}
+
+
+.slider-controls {
+  margin-top: 20px;
+  text-align: center;
+  font-size: 14px;
+}
+
+.slider-controls input[type="range"] {
+  width: 300px;
+  margin: 10px;
+}
+
+.play-button {
+  padding: 6px 14px;
+  border-radius: 6px;
+  background: #111;
+  color: white;
+  cursor: pointer;
+  transition: 0.15s;
+}
+
+.play-button:hover {
+  background: #333;
+}
+
+
+.esa-tooltip {
+  position: absolute;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 10px 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  font-size: 14px;
+  pointer-events: auto; 
+  max-width: 260px;
+}
+
+.esa-marker {
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.esa-marker:hover {
+  transform: scale(1.15);
+}
+
+
+.tooltip {
+  position: absolute;
+  opacity: 0;
+  background: rgba(0,0,0,0.85);
+  color: white;
+  padding: 6px 10px;
+  border-radius: 4px;
+  pointer-events: none;
+  font-size: 12px;
+}
+
+
+.legend-item {
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.legend-item:hover text {
   font-weight: 600;
 }
 
-.process-book a:hover {
-  text-decoration: underline;
+
+.state {
+  transition: 0.15s;
 }
 
-svg text {
-  font-family: "Lato", sans-serif;
+.state:hover {
+  stroke: #000;
+  stroke-width: 2;
 }
 
-#chart, #chart-hist, #chart-map {
-  margin-bottom: 80px;
+
+#chart-hist rect {
+  transition: 0.2s;
+}
+
+/* highlight state when selected */
+#chart-hist rect.highlighted {
+  fill: #111827 !important;
+  opacity: 1 !important;
 }
