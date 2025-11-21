@@ -20,7 +20,6 @@ function renderStackedArea() {
       .style("padding", "8px 10px")
       .style("box-shadow", "0 2px 6px rgba(0,0,0,0.15)")
       .style("font-size", "16px")
-      .style("pointer-events", "none")
       .style("opacity", 0);
 
     // Title
