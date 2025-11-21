@@ -295,7 +295,7 @@ function renderStackedArea() {
             style="margin-top:4px; padding:4px 10px; border-radius:4px;
                    border:1px solid #111; background:#111; color:#fff;
                    font-size:13px; cursor:pointer;">
-            See details
+            See Impact on New Species Added
           </button>
         `;
     
@@ -585,7 +585,7 @@ function renderHistogram5yr() {
       .style("font-size", "12px")
       .text("Number of Species");
 
-    // Global function so ESA "see details" can highlight a bin
+    // Global function so ESA see impact can highlight a bin
     window.highlightListingBin = function(targetStartYear) {
       // Reset all bars
       bars
