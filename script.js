@@ -34,7 +34,7 @@ function renderStackedArea() {
       .html(
         `Sources: 
         <a href="https://www.kaggle.com/datasets/chirayurijal/worldwildlifespeciesdata" target="_blank" rel="noopener noreferrer">
-          World Wildlife Species Data
+          Wildlife Species Data
         </a> • 
         <a href="https://www.fws.gov/page/endangered-species-act-amendments" target="_blank" rel="noopener noreferrer">
           Endangered Species Act Amendments
