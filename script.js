@@ -141,8 +141,12 @@ function renderStackedArea() {
       .attr("type", "button")
       .attr("class", "play-button")
       .attr("aria-pressed", "false")
-      .attr("title", "Play timeline")
-      .text("▶ Play");
+      .attr("title", "Play timeline");
+
+    // label span inside the button so we can update text without replacing pseudo-icon
+    playButton.append("span")
+      .attr("class", "play-label")
+      .text("Play");
 
     let isPlaying = false;
     let playInterval = null;
@@ -416,9 +420,9 @@ function renderStackedArea() {
       isPlaying = true;
 
       playButton
-        .text("⏸ Pause")
-        .attr("aria-pressed", "true")
-        .classed("is-playing", true);
+        .classed("is-playing", true)
+        .attr("aria-pressed", "true");
+      playButton.select("span.play-label").text("Pause");
 
       // Smoothly animate the window by interpolating the start year
       // and updating the chart on every animation frame. This replaces
@@ -507,15 +511,13 @@ function renderStackedArea() {
       isPlaying = false;
 
       playButton
-        .text("▶ Play")
-        .attr("aria-pressed", "false")
-        .classed("is-playing", false);
+        .classed("is-playing", false)
+        .attr("aria-pressed", "false");
+      playButton.select("span.play-label").text("Play");
 
-      // interrupt any ongoing transitions so animation stops immediately
-      try {
-        svg.interrupt();
-      } catch (e) {
-        // svg might not exist in scope in some contexts; ignore errors
+      if (playInterval) {
+        playInterval.stop();
+        playInterval = null;
       }
     }
 
