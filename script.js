@@ -449,7 +449,6 @@ function renderStackedArea() {
       }
     });
 
-    // CLICKABLE LEGEND TO TOGGLE LAYERS
     const activeKeys = new Set(keys);  // start with all layers visible
 
     legendItems.on("click", function (event, key) {
@@ -480,6 +479,11 @@ function renderStackedArea() {
 }
 
 
+/**
+ * Creates a histogram of new species listings in 5-year bins. Connects to ESA amendments using 
+ * global function to highlight bins.
+ */
+ 
 function renderHistogram5yr() {
   d3.csv("data/species-listings-by-year-totals-report.csv", d3.autoType).then(data => {
     data = data.map(d => ({
@@ -604,6 +608,10 @@ function renderHistogram5yr() {
   });
 }
 
+/**
+ * Renders a US map showing endangered species counts by state for 2019.
+ * Loads GeoJSON and CSV data, merges them, and creates an interactive choropleth map.
+ */
 function renderUSMap() {
   const container = d3.select("#chart-map");
   container.html("");
