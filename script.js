@@ -261,6 +261,7 @@ function renderStackedArea() {
     const markersGroup = svg.append("g")
       .attr("class", "esa-markers");
 
+    // ESA marker lines
     const markerLines = markersGroup.selectAll("line.esa-line")
       .data(amendmentData)
       .join("line")
@@ -272,6 +273,7 @@ function renderStackedArea() {
       .attr("stroke-dasharray", "3,3")
       .attr("opacity", 0.4);
 
+    // ESA marker circles with click tooltip
     const markerCircles = markersGroup.selectAll("circle.esa-marker")
       .data(amendmentData)
       .join("circle")
@@ -336,6 +338,7 @@ function renderStackedArea() {
     // Store current window data if you want to reuse later
     let currentWindowData = [];
 
+    // Function to update chart for a given window start year
     function updateWindow(startYear) {
       const endYear = startYear + windowSize - 1;
       sliderValue.text(`${startYear}–${endYear}`);
@@ -451,6 +454,7 @@ function renderStackedArea() {
 
     const activeKeys = new Set(keys);  // start with all layers visible
 
+    // Toggle layers on legend click
     legendItems.on("click", function (event, key) {
       if (activeKeys.has(key)) {
         activeKeys.delete(key);
@@ -751,7 +755,7 @@ function renderUSMap() {
         d3.select(this).attr("stroke", "#fff").attr("stroke-width", 1);
       });
 
-    // Legend (unchanged)
+    // Legend
     const legendWidth = 200;
     const legendHeight = 10;
 
