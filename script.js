@@ -295,7 +295,7 @@ function renderStackedArea() {
             style="margin-top:4px; padding:4px 10px; border-radius:4px;
                    border:1px solid #111; background:#111; color:#fff;
                    font-size:13px; cursor:pointer;">
-            See Impact on New Species Added
+            See Legislative Effect on Number of New Species Added
           </button>
         `;
     
