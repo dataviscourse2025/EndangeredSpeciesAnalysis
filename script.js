@@ -772,9 +772,10 @@ function renderUSMap() {
       ${top5}
     `);
 
+    // Blue color scale: light -> medium -> dark
     const color = d3.scaleLinear()
       .domain([0, 0.5 * maxVal, maxVal])
-      .range(["#ffeeee", "#b30000", "#2b0000"]);
+      .range(["#e7f5ff", "#66b2e6", "#08306b"]);
 
     const allStates = topojson.feature(us, us.objects.states).features;
 
