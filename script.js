@@ -784,7 +784,6 @@ function renderUSMap() {
   );
 }
 
-
 // Render charts
 renderStackedArea();
 renderHistogram5yr();
