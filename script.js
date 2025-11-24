@@ -140,6 +140,8 @@ function renderStackedArea() {
     const playButton = controls.append("button")
       .attr("type", "button")
       .attr("class", "play-button")
+      .attr("aria-pressed", "false")
+      .attr("title", "Play timeline")
       .text("▶ Play");
 
     let isPlaying = false;
@@ -414,33 +416,106 @@ function renderStackedArea() {
       isPlaying = true;
 
       playButton
-        .text(" Play")
+        .text("⏸ Pause")
+        .attr("aria-pressed", "true")
         .classed("is-playing", true);
 
-      playInterval = d3.interval(() => {
-        let current = +slider.property("value");
+      // Smoothly animate the window by interpolating the start year
+      // and updating the chart on every animation frame. This replaces
+      // the previous interval-based jumpy updates.
+      function animateStep(startYear) {
+        const duration = 800;
+        const interp = d3.interpolateNumber(startYear, startYear + 1);
 
-        if (current >= maxYear - windowSize + 1) {
-          current = minYear;
-        } else {
-          current += 1;
-        }
+        const t = d3.transition()
+          .duration(duration)
+          .ease(d3.easeLinear);
 
-        slider.property("value", current);
-        updateWindow(current);
-      }, 800);
+        t.tween("window", () => {
+          return u => {
+            const currYear = interp(u);
+            // compute fractional start/end dates
+            const startDate = new Date(currYear, 0, 1);
+            const endDate = new Date(currYear + windowSize - 1, 11, 31);
+
+            const windowData = fullData.filter(d => d.date >= startDate && d.date <= endDate);
+            if (!windowData.length) return;
+
+            const layers = stack(windowData);
+
+            x.domain(d3.extent(windowData, d => d.date));
+            y.domain([0, d3.max(layers, layer => d3.max(layer, d => d[1]))]).nice();
+
+            // update paths directly each tick for a smooth frame-by-frame morph
+            const paths = layersGroup.selectAll("path.layer").data(layers, d => d.key);
+
+            paths.join(
+              enter => enter.append("path")
+                .attr("class", "layer")
+                .attr("fill", d => color(d.key))
+                .attr("d", area),
+              update => update.attr("d", area),
+              exit => exit.remove()
+            );
+
+            // update axes without separate transitions to keep in sync
+            const xAxis = d3.axisBottom(x)
+              .ticks(d3.timeYear.every(1))
+              .tickFormat(d3.timeFormat("%Y"));
+
+            const yAxis = d3.axisLeft(y)
+              .ticks(5)
+              .tickSize(-width)
+              .tickSizeOuter(0);
+
+            xAxisGroup.call(xAxis)
+              .selectAll("text")
+              .style("font-size", "11px");
+
+            yAxisGroup.call(yAxis);
+            yAxisGroup.selectAll("line").attr("stroke", "#e5e7eb").attr("stroke-opacity", 0.9);
+            yAxisGroup.selectAll(".domain").attr("stroke", "#9ca3af");
+            xAxisGroup.selectAll("path").attr("stroke", "#9ca3af");
+            xAxisGroup.selectAll("line").attr("stroke", "#9ca3af");
+
+            // Re-position ESA markers
+            markerLines.attr("x1", d => x(d.date)).attr("x2", d => x(d.date));
+            markerCircles.attr("cx", d => x(d.date));
+
+            // update the displayed slider value (rounded)
+            const dispYear = Math.round(currYear);
+            sliderValue.text(`${dispYear}–${dispYear + windowSize - 1}`);
+          };
+        });
+
+        // when transition ends, move to next year and continue if still playing
+        t.on("end", () => {
+          let next = +slider.property("value") + 1;
+          if (next > maxYear - windowSize + 1) next = minYear;
+          slider.property("value", next);
+          // call updateWindow once to ensure final exact frame
+          updateWindow(next);
+          if (isPlaying) animateStep(next);
+        });
+      }
+
+      // start the first step
+      animateStep(+slider.property("value"));
     }
 
     function stopPlaying() {
       isPlaying = false;
 
       playButton
-        .text(" Play")
+        .text("▶ Play")
+        .attr("aria-pressed", "false")
         .classed("is-playing", false);
 
-      if (playInterval) {
-        playInterval.stop();
-        playInterval = null;
+      // interrupt any ongoing transitions so animation stops immediately
+      try {
+        svg.interrupt();
+      } catch (e) {
+        // svg might not exist in scope in some contexts; ignore errors
       }
     }
 
