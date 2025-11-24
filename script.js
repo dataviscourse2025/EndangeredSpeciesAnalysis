@@ -613,6 +613,10 @@ function renderUSMap() {
     .attr("class", "chart-title")
     .text("US Endangered Species by State (2019)");
 
+  // Top 5 summary block (above map)
+  const summary = container.append("div")
+    .attr("id", "top-states-summary");
+
   const width = 960;
   const height = 600;
 
@@ -648,13 +652,36 @@ function renderUSMap() {
     let maxVal = 0;
 
     csvData.forEach(d => {
-      const key = normalize(d.State); 
+      const key = normalize(d.State);
       const val = +d["Endangered (Total) 2019"];
       if (!isNaN(val)) {
         data[key] = val;
         if (val > maxVal) maxVal = val;
       }
     });
+
+    const totalNational = d3.sum(Object.values(data));
+
+    // Build ranking
+    const sortedStates = csvData
+      .map(d => [d.State, +d["Endangered (Total) 2019"]])
+      .sort((a, b) => b[1] - a[1]);
+
+    const ranks = {};
+    sortedStates.forEach(([name, count], i) => {
+      ranks[normalize(name)] = i + 1;
+    });
+
+    // Top 5 summary HTML
+    const top5 = sortedStates
+      .slice(0, 5)
+      .map(([name, count], i) => `<strong>${i + 1}.</strong> ${name} — ${count} species`)
+      .join("<br>");
+
+    summary.html(`
+      <strong>Top 5 States With the Most Endangered Species (2019)</strong><br>
+      ${top5}
+    `);
 
     const color = d3.scaleLinear()
       .domain([0, 0.5 * maxVal, maxVal])
@@ -676,35 +703,47 @@ function renderUSMap() {
       .attr("d", path)
       .attr("fill", d => {
         const key = normalize(d.properties.name || d.id);
-        return color(data[key]);  // guaranteed to exist because of filter
+        return color(data[key]);
       })
       .attr("stroke", "#fff")
       .attr("stroke-width", 1)
       .on("mouseover", function (event, d) {
         const key = normalize(d.properties.name || d.id);
         const stateName = d.properties.name || d.id;
-        const value = data[key];
+        const value = data[key] || 0;
+        const rank = ranks[key] || "N/A";
+        const pct = totalNational ? ((value / totalNational) * 100).toFixed(1) : "0.0";
 
-        tooltip.transition().duration(100).style("opacity", 1);
-        tooltip.html(
-          `<strong>${stateName}</strong><br/>Endangered: ${value}`
-        )
+        let category = "Low";
+        if (value > 150) category = "Very High";
+        else if (value > 80) category = "High";
+        else if (value > 40) category = "Moderate";
+
+        tooltip
+          .style("opacity", 1)
+          .html(`
+            <strong>${stateName}</strong><br>
+            Rank: #${rank} nationally<br>
+            Endangered species: ${value}<br>
+            ${pct}% of U.S. total<br>
+            Level: <strong>${category}</strong>
+          `)
           .style("left", (event.pageX + 10) + "px")
-          .style("top", (event.pageY + 10) + "px");
+          .style("top", (event.pageY - 28) + "px");
 
         d3.select(this).attr("stroke", "#000").attr("stroke-width", 2);
       })
       .on("mousemove", function (event) {
         tooltip
           .style("left", (event.pageX + 10) + "px")
-          .style("top", (event.pageY + 10) + "px");
+          .style("top", (event.pageY - 28) + "px");
       })
       .on("mouseout", function () {
-        tooltip.transition().duration(100).style("opacity", 0);
+        tooltip.style("opacity", 0);
         d3.select(this).attr("stroke", "#fff").attr("stroke-width", 1);
       });
 
-    // Legend
+    // Legend (unchanged)
     const legendWidth = 200;
     const legendHeight = 10;
 
@@ -739,11 +778,12 @@ function renderUSMap() {
       .style("font-size", "12px")
       .attr("text-anchor", "end")
       .text("High");
-
+      
   }).catch(error =>
     console.error("Error loading map or data:", error)
   );
 }
+
 
 // Render charts
 renderStackedArea();
