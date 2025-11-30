@@ -702,7 +702,7 @@ function renderUSMap() {
     .attr("class", "chart-title")
     .text("US Endangered Species by State (2019)");
 
-  // Top 5 summary block (above map)
+  // Top 5 summary block (above map, inside chart card)
   const summary = container.append("div")
     .attr("id", "top-states-summary");
 
@@ -714,16 +714,8 @@ function renderUSMap() {
     .attr("height", height);
 
   const tooltip = container.append("div")
-    .attr("id", "tooltip")
     .attr("class", "tooltip")
-    .style("opacity", 0)
-    .style("position", "absolute")
-    .style("background", "rgba(0,0,0,0.8)")
-    .style("color", "white")
-    .style("padding", "5px 10px")
-    .style("border-radius", "4px")
-    .style("pointer-events", "none")
-    .style("font-size", "12px");
+    .style("opacity", 0);
 
   const projection = d3.geoAlbersUsa()
     .translate([width / 2, height / 2])
@@ -772,21 +764,20 @@ function renderUSMap() {
       ${top5}
     `);
 
-    // Green color scale: light -> medium -> dark
     const color = d3.scaleLinear()
       .domain([0, 0.5 * maxVal, maxVal])
-      .range(["#e8f5e9", "#4caf50", "#1b5e20"]);
+      .range(["#ffeeee", "#b30000", "#2b0000"]);
 
     const allStates = topojson.feature(us, us.objects.states).features;
 
     const usableStates = allStates.filter(f => {
       const key = normalize(f.properties.name || f.id);
-      const hasData = Object.prototype.hasOwnProperty.call(data, key);
-      return hasData;
+      return Object.prototype.hasOwnProperty.call(data, key);
     });
 
-    svg.append("g")
-      .selectAll("path")
+    const statesGroup = svg.append("g");
+
+    statesGroup.selectAll("path")
       .data(usableStates)
       .join("path")
       .attr("class", "state")
@@ -831,9 +822,89 @@ function renderUSMap() {
       .on("mouseout", function () {
         tooltip.style("opacity", 0);
         d3.select(this).attr("stroke", "#fff").attr("stroke-width", 1);
+      })
+      .on("dblclick", function (event, d) {
+        const key = normalize(d.properties.name || d.id);
+        const stateName = d.properties.name || d.id;
+        const value = data[key] || 0;
+        const rank = ranks[key] || "N/A";
+        const pct = totalNational ? ((value / totalNational) * 100).toFixed(1) : "0.0";
+
+        let category = "Low";
+        if (value > 150) category = "Very High";
+        else if (value > 80) category = "High";
+        else if (value > 40) category = "Moderate";
+
+        const overlay = d3.select("#state-detail");
+        overlay
+          .style("display", "flex")
+          .html(`
+            <div class="state-detail-card">
+              <h3>${stateName} — State Profile</h3>
+              <div class="stat-row"><strong>Rank:</strong> #${rank} nationally</div>
+              <div class="stat-row"><strong>Endangered species (2019):</strong> ${value}</div>
+              <div class="stat-row"><strong>Share of U.S. total:</strong> ${pct}%</div>
+              <div class="stat-row"><strong>Level:</strong> ${category}</div>
+
+              <div class="state-mini-chart-title">
+                Top 10 states by endangered species (2019)
+              </div>
+              <div id="state-mini-chart"></div>
+
+              <button class="state-detail-close">Back to map</button>
+            </div>
+          `);
+
+        // Build mini horizontal bar chart inside overlay
+        const miniData = sortedStates.slice(0, 10);
+        const miniWidth = 420;
+        const miniHeight = 230;
+        const miniMargin = { top: 10, right: 20, bottom: 20, left: 130 };
+
+        const xMini = d3.scaleLinear()
+          .domain([0, d3.max(miniData, d => d[1])])
+          .nice()
+          .range([miniMargin.left, miniWidth - miniMargin.right]);
+
+        const yMini = d3.scaleBand()
+          .domain(miniData.map(d => d[0]))
+          .range([miniMargin.top, miniHeight - miniMargin.bottom])
+          .padding(0.15);
+
+        const svgMini = d3.select("#state-mini-chart")
+          .append("svg")
+          .attr("width", miniWidth)
+          .attr("height", miniHeight);
+
+        svgMini.selectAll("rect")
+          .data(miniData)
+          .join("rect")
+          .attr("x", xMini(0))
+          .attr("y", d => yMini(d[0]))
+          .attr("height", yMini.bandwidth())
+          .attr("width", d => xMini(d[1]) - xMini(0))
+          .attr("fill", d => d[0] === stateName ? "#b30000" : "#d1d5db");
+
+        svgMini.append("g")
+          .attr("transform", `translate(${xMini(0)},0)`)
+          .call(d3.axisLeft(yMini).tickSize(0))
+          .selectAll("text")
+          .style("font-size", "11px")
+          .attr("dy", "0.35em");
+
+        // Close handlers
+        overlay.select(".state-detail-close").on("click", () => {
+          overlay.style("display", "none");
+        });
+
+        overlay.on("click", (evt) => {
+          if (evt.target === overlay.node()) {
+            overlay.style("display", "none");
+          }
+        });
       });
 
-    // Legend
+    // Color legend
     const legendWidth = 200;
     const legendHeight = 10;
 
@@ -868,7 +939,6 @@ function renderUSMap() {
       .style("font-size", "12px")
       .attr("text-anchor", "end")
       .text("High");
-      
   }).catch(error =>
     console.error("Error loading map or data:", error)
   );

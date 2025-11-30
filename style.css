@@ -145,7 +145,7 @@ h1 {
   appearance: none;
   flex: 1;
   height: 6px;
-  background: #d1d5db;          /* soft gray */
+  background: #d1d5db;          
   border-radius: 999px;
   outline: none;
   cursor: pointer;
@@ -294,4 +294,53 @@ svg text {
   box-shadow: 0 2px 10px rgba(0,0,0,0.10);
   font-size: 14px;
   line-height: 1.45;
+}
+.state-detail-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.state-detail-card {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.4);
+  max-width: 520px;
+  width: 90%;
+  padding: 24px 28px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.state-detail-card h3 {
+  margin-top: 0;
+  margin-bottom: 6px;
+  font-size: 20px;
+}
+
+.state-detail-card .stat-row {
+  margin: 4px 0;
+}
+
+.state-detail-close {
+  margin-top: 16px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: none;
+  background: #111827;
+  color: #f9fafb;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.state-mini-chart-title {
+  margin-top: 14px;
+  margin-bottom: 6px;
+  font-weight: 600;
+  font-size: 13px;
 }
