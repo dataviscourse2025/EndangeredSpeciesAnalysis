@@ -451,7 +451,6 @@ function renderStackedArea() {
             const layers = stack(windowData);
 
             x.domain(d3.extent(windowData, d => d.date));
-            y.domain([0, d3.max(layers, layer => d3.max(layer, d => d[1]))]).nice();
 
             // update paths directly each tick for a smooth frame-by-frame morph
             const paths = layersGroup.selectAll("path.layer").data(layers, d => d.key);
