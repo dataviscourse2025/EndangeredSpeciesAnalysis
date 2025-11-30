@@ -344,3 +344,25 @@ svg text {
   font-weight: 600;
   font-size: 13px;
 }
+
+.header-links {
+  text-align: center;
+  margin-top: 4px;
+  font-size: 14px;
+}
+
+.header-links a {
+  color: #1d4ed8;
+  text-decoration: none;
+  font-weight: 600;
+  margin: 0 4px;
+}
+
+.header-links a:hover {
+  text-decoration: underline;
+}
+
+.header-links .divider {
+  color: #444;
+  margin: 0 6px;
+}
