@@ -766,7 +766,7 @@ function renderUSMap() {
 
     const color = d3.scaleLinear()
       .domain([0, 0.5 * maxVal, maxVal])
-      .range(["#ffeeee", "#b30000", "#2b0000"]);
+      .range(["#e6f4e6", "#66c266", "#1f7a1f"]);
 
     const allStates = topojson.feature(us, us.objects.states).features;
 
