@@ -166,9 +166,14 @@ function renderStackedArea() {
     ];
 
     const stack = d3.stack().keys(keys);
+    // compute global max once so y-axis stays fixed
+    const allLayersGlobal = stack(fullData);
+    const globalMaxY = d3.max(allLayersGlobal, layer =>
+      d3.max(layer, d => d[1])
+    );
 
     const x = d3.scaleTime().range([0, width]);
-    const y = d3.scaleLinear().range([height, 0]);
+    const y = d3.scaleLinear().range([height, 0]).domain([0, globalMaxY]).nice();
 
     const color = d3.scaleOrdinal()
       .domain(keys)
@@ -359,7 +364,6 @@ function renderStackedArea() {
       const layers = stack(windowData);
 
       x.domain(d3.extent(windowData, d => d.date));
-      y.domain([0, d3.max(layers, layer => d3.max(layer, d => d[1]))]).nice();
 
       const paths = layersGroup.selectAll("path.layer")
         .data(layers, d => d.key);
@@ -369,8 +373,7 @@ function renderStackedArea() {
           .attr("class", "layer")
           .attr("fill", d => color(d.key))
           .attr("d", area),
-        update => update.transition().duration(400).attr("d", area),
-        exit => exit.remove()
+          update => update.transition().duration(700).ease(d3.easeCubicInOut).attr("d", area)
       );
 
       const xAxis = d3.axisBottom(x)
