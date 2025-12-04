@@ -104,7 +104,7 @@ h1 {
 }
 
 /* Slider controls for stacked area */
-/* --- Simple, clean timeline slider --- */
+/* Simple, clean timeline slider */
 .slider-controls {
   width: 100%;
   max-width: 900px;
@@ -139,7 +139,7 @@ h1 {
   color: #f9fafb;
 }
 
-/* --- CLEAN RANGE SLIDER TRACK --- */
+/* Clean range slider */
 .slider-controls input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
