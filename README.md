@@ -11,7 +11,6 @@ This project is an interactive, browser-based dashboard that explores endangered
 
 All custom logic for loading data, transforming it, and rendering these visualizations is implemented in JavaScript using D3.
 
----
 
 ## Project URLs
 
@@ -21,7 +20,6 @@ https://dataviscourse2025.github.io/EndangeredSpeciesAnalysis/
 **Screencast videos:**  
 https://www.youtube.com/watch?v=618dvYIEuB4
 
----
 
 ## Files and Code Ownership
 
@@ -47,7 +45,6 @@ These parts of the project were written by us:
 ### **JavaScript (script.js)**  
 Contains three major visualization functions:
 
----
 
 ### **1. renderStackedArea()**
 Creates a stacked area chart showing endangered species by class over time.
@@ -61,7 +58,6 @@ Features:
   - Includes a button that scrolls to the histogram and highlights the relevant 5-year bin.
 - Legend that toggles individual animal classes.
 
----
 
 ### **2. renderHistogram5yr()**
 Shows how many species were added to the endangered list in 5-year intervals.
@@ -72,7 +68,6 @@ Features:
 - Global function `window.highlightListingBin(startYear)`:
   - Highlights the correct 5-year bin when invoked from ESA tooltip interactions.
 
----
 
 ### **3. renderUSMap()**
 An interactive choropleth map showing endangered species counts by U.S. state for 2019.
@@ -92,7 +87,6 @@ Features:
 - Overlay closes via a button or clicking outside the card.
 - Includes a gradient legend.
 
----
 
 ## Data Files Used
 
@@ -109,9 +103,8 @@ We only cleaned, merged, and used these inputs — we did not generate these dat
 - `data/endangered_by_state_2019.csv`  
   State-level endangered species counts for 2019.
 
-We generated this dataset with an LLM by incorporating outside knowledge of general species trends in each state in order to get a spacial distribution of the data.
+We generated this dataset with an LLM by incorporating outside knowledge of general species trends in each state in order to get a valid spacial distribution of the data.
 
----
 
 ## External Libraries that we Used
 
@@ -123,13 +116,12 @@ We rely on the following external libraries via CDN:
 
 We do not modify these libraries.
 
----
 
 ## Non-Obvious Features in the Interface
 
 ### **Stacked Area Chart**
 - 10-year sliding window updates automatically when the slider or Play button is used.
-- Play mode animates **smoothly**, advancing one year at a time.
+- Play mode animates smoothly, advancing one year at a time.
 - ESA amendment markers:
   - Open detailed tooltips.
   - Include a button that scrolls to the histogram and highlights the related 5-year listing period.
@@ -146,6 +138,3 @@ We do not modify these libraries.
   - Opens a full-screen state detail card.
   - Displays a mini ranking chart of top 10 states.
 - Includes a fixed color legend and a Top 5 summary above the map.
-
----
-
