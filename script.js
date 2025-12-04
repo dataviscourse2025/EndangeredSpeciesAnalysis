@@ -1,7 +1,7 @@
 // By Sydney Lundberg and Victoria Mache
 
 /**
- * Creates a stacked area chart of endangered animal species (by class).
+ * Creates a stacked area chart of endangered animal species by class.
  * Loads the CSV, parses dates, coerces counts to numbers, filters invalid rows,
  * then draws the SVG with axes, labels, a legend, and ESA amendment markers.
  */
@@ -723,8 +723,10 @@ function renderUSMap() {
     .translate([width / 2, height / 2])
     .scale(1200);
 
+  // GeoJSON into SVG paths
   const path = d3.geoPath().projection(projection);
 
+  // Load both the US map topology and the endangered-species data
   Promise.all([
     d3.json("https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json"),
     d3.csv("data/endangered_by_state_2019.csv")
@@ -734,6 +736,7 @@ function renderUSMap() {
     const data = {};
     let maxVal = 0;
 
+    // Parse CSV rows into the data object and track the maximum value
     csvData.forEach(d => {
       const key = normalize(d.State);
       const val = +d["Endangered (Total) 2019"];
@@ -750,6 +753,7 @@ function renderUSMap() {
       .map(d => [d.State, +d["Endangered (Total) 2019"]])
       .sort((a, b) => b[1] - a[1]);
 
+    // Rank lookup
     const ranks = {};
     sortedStates.forEach(([name, count], i) => {
       ranks[normalize(name)] = i + 1;
@@ -766,12 +770,15 @@ function renderUSMap() {
       ${top5}
     `);
 
+    // Color scale
     const color = d3.scaleLinear()
       .domain([0, 0.5 * maxVal, maxVal])
       .range(["#d2efd2", "#4fa84f", "#145214"]);
-
+    
+    // Convert TopoJSON states into GeoJSON features
     const allStates = topojson.feature(us, us.objects.states).features;
 
+     // Filter out any states that don't appear in our data
     const usableStates = allStates.filter(f => {
       const key = normalize(f.properties.name || f.id);
       return Object.prototype.hasOwnProperty.call(data, key);
@@ -779,6 +786,7 @@ function renderUSMap() {
 
     const statesGroup = svg.append("g");
 
+    // Draw the state paths
     statesGroup.selectAll("path")
       .data(usableStates)
       .join("path")
@@ -790,6 +798,8 @@ function renderUSMap() {
       })
       .attr("stroke", "#fff")
       .attr("stroke-width", 1)
+
+      // Mouse over: show tooltip and highlight border
       .on("mouseover", function (event, d) {
         const key = normalize(d.properties.name || d.id);
         const stateName = d.properties.name || d.id;
@@ -797,11 +807,13 @@ function renderUSMap() {
         const rank = ranks[key] || "N/A";
         const pct = totalNational ? ((value / totalNational) * 100).toFixed(1) : "0.0";
 
+        // Qualitative category based on count thresholds
         let category = "Low";
         if (value > 150) category = "Very High";
         else if (value > 80) category = "High";
         else if (value > 40) category = "Moderate";
 
+        // Show tooltip with formatted stats
         tooltip
           .style("opacity", 1)
           .html(`
@@ -816,15 +828,18 @@ function renderUSMap() {
 
         d3.select(this).attr("stroke", "#000").attr("stroke-width", 2);
       })
+      // Mouse move: keep tooltip following the cursor
       .on("mousemove", function (event) {
         tooltip
           .style("left", (event.pageX + 10) + "px")
           .style("top", (event.pageY - 28) + "px");
       })
+      // Mouse out: hide tooltip and reset stroke
       .on("mouseout", function () {
         tooltip.style("opacity", 0);
         d3.select(this).attr("stroke", "#fff").attr("stroke-width", 1);
       })
+      // Double-click: open overlay with state profile and mini chart
       .on("dblclick", function (event, d) {
         const key = normalize(d.properties.name || d.id);
         const stateName = d.properties.name || d.id;
@@ -837,6 +852,7 @@ function renderUSMap() {
         else if (value > 80) category = "High";
         else if (value > 40) category = "Moderate";
 
+        // Overlay (full-screen) container for the state detail view
         const overlay = d3.select("#state-detail");
         overlay
           .style("display", "flex")
@@ -863,21 +879,25 @@ function renderUSMap() {
         const miniHeight = 230;
         const miniMargin = { top: 10, right: 20, bottom: 20, left: 130 };
 
+        // X scale: endangered species counts
         const xMini = d3.scaleLinear()
           .domain([0, d3.max(miniData, d => d[1])])
           .nice()
           .range([miniMargin.left, miniWidth - miniMargin.right]);
-
+        
+        // Y scale: state names as bands
         const yMini = d3.scaleBand()
           .domain(miniData.map(d => d[0]))
           .range([miniMargin.top, miniHeight - miniMargin.bottom])
           .padding(0.15);
-
+        
+        // SVG container for the mini chart
         const svgMini = d3.select("#state-mini-chart")
           .append("svg")
           .attr("width", miniWidth)
           .attr("height", miniHeight);
-
+        
+        // Draw bars for each of the top 10 states
         svgMini.selectAll("rect")
           .data(miniData)
           .join("rect")
